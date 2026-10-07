@@ -1,67 +1,84 @@
 import { defineStore } from 'pinia'
+import { api } from '../boot/axios.js'
 
 export const useViajeStore = defineStore('viaje', {
   state: () => ({
-    viajes: [
-      {
-        id: '1',
-        codigo: 'VIA-001',
-        origen: 'Bogotá',
-        destino: 'Medellín',
-        fecha: '2026-10-15',
-        hora: '06:00',
-        vehiculoId: '1',
-        precio: 85000,
-        estado: 'Disponible'
-      },
-      {
-        id: '2',
-        codigo: 'VIA-002',
-        origen: 'Bogotá',
-        destino: 'Cali',
-        fecha: '2026-10-16',
-        hora: '08:30',
-        vehiculoId: '2',
-        precio: 75000,
-        estado: 'Disponible'
-      },
-      {
-        id: '3',
-        codigo: 'VIA-003',
-        origen: 'Medellín',
-        destino: 'Cartagena',
-        fecha: '2026-10-18',
-        hora: '14:00',
-        vehiculoId: '3',
-        precio: 120000,
-        estado: 'Programado'
-      }
-    ]
+    viajes: [],
+    cargando: false,
+    error: null
   }),
+
   actions: {
-    crearViaje(datos) {
-      const contador = this.viajes.length + 1
-      const nuevo = {
-        id: String(Date.now()),
-        codigo: `VIA-${String(contador).padStart(3, '0')}`,
-        origen: datos.origen.trim(),
-        destino: datos.destino.trim(),
-        fecha: datos.fecha,
-        hora: datos.hora,
-        vehiculoId: String(datos.vehiculoId),
-        precio: Number(datos.precio),
-        estado: datos.estado || 'Programado'
+    // 1. Cargar viajes reales desde MongoDB Atlas
+    async cargarViajes() {
+      this.cargando = true
+      this.error = null
+      try {
+        const respuesta = await api.get('/trips')
+        const viajesDB = respuesta.data?.data || []
+
+        this.viajes = viajesDB.map(v => ({
+          _id: v._id,
+          id: v._id, // Asignar el _id real de MongoDB
+          codigo: v.code || v.codigo || `VIA-${v._id ? v._id.slice(-4) : '000'}`,
+          origen: v.origin || v.origen,
+          destino: v.destination || v.destino,
+          fecha: v.date ? v.date.split('T')[0] : v.fecha,
+          hora: v.departureTime || v.hora,
+          vehiculoId: v.bus?._id || v.bus || v.vehiculoId,
+          precio: Number(v.price || v.precio) || 0,
+          estado: v.status || v.estado || 'Disponible'
+        }))
+      } catch (e) {
+        console.error('Error al cargar viajes:', e)
+        this.error = e.response?.data?.message || e.message
+      } finally {
+        this.cargando = false
       }
-      this.viajes.push(nuevo)
-      return nuevo
     },
+
+    // 2. Crear un viaje real en MongoDB Atlas
+    async crearViaje(datos) {
+      try {
+        const respuesta = await api.post('/trips', {
+          origin: datos.origen,
+          destination: datos.destino,
+          date: datos.fecha,
+          departureTime: datos.hora,
+          price: Number(datos.precio),
+          bus: datos.vehiculoId
+        })
+
+        const nuevoDB = respuesta.data?.data
+
+        const nuevoViaje = {
+          _id: nuevoDB._id,
+          id: nuevoDB._id,
+          codigo: nuevoDB.code || nuevoDB.codigo || `VIA-${nuevoDB._id.slice(-4)}`,
+          origen: nuevoDB.origin || nuevoDB.origen,
+          destino: nuevoDB.destination || nuevoDB.destino,
+          fecha: nuevoDB.date ? nuevoDB.date.split('T')[0] : nuevoDB.fecha,
+          hora: nuevoDB.departureTime || nuevoDB.hora,
+          vehiculoId: nuevoDB.bus?._id || nuevoDB.bus,
+          precio: Number(nuevoDB.price || nuevoDB.precio) || 0,
+          estado: nuevoDB.status || nuevoDB.estado || 'Disponible'
+        }
+
+        this.viajes.push(nuevoViaje)
+        return nuevoViaje
+      } catch (error) {
+        console.error('Error al crear viaje:', error)
+        throw new Error(error.response?.data?.message || 'No se pudo crear el viaje')
+      }
+    },
+
     obtenerViaje(id) {
-      return this.viajes.find(v => String(v.id) === String(id)) || null
+      return this.viajes.find(v => String(v.id) === String(id) || String(v._id) === String(id)) || null
     },
-    actualizarEstado(id, estado) {
+
+    async actualizarEstado(id, estado) {
       const v = this.obtenerViaje(id)
       if (v) v.estado = estado
     }
-  },
-  persist: true
+  }
 })
