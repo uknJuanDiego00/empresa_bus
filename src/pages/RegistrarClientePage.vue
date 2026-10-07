@@ -3,10 +3,10 @@
     <div class="q-mx-auto" style="max-width: 780px;">
       <div class="row items-center justify-between q-mb-lg">
         <div>
-          <div class="text-h5 text-weight-bold text-grey-9">Registrar Cliente</div>
-          <div class="text-caption text-grey-6">Ingreso de un nuevo pasajero</div>
+          <div class="text-h5 text-weight-bold text-grey-9">Registrar Vehículo</div>
+          <div class="text-caption text-grey-6">Ingreso de nueva unidad a la flota</div>
         </div>
-        <q-btn flat color="grey-8" icon="arrow_back" label="Volver" to="/clientes" no-caps />
+        <q-btn flat color="grey-8" icon="arrow_back" label="Volver" to="/vehiculos" no-caps />
       </div>
 
       <!-- Mensaje de éxito -->
@@ -14,23 +14,25 @@
         <template v-slot:avatar>
           <q-icon name="check_circle" color="positive" />
         </template>
-        Cliente registrado exitosamente en la base de datos.
+        <div>
+          Vehículo registrado correctamente.
+          <q-btn flat dense color="primary" label="Configurar puestos aquí" :to="`/vehiculos/${nuevoId}/mapeo`" no-caps class="q-ml-sm text-weight-bold" />
+        </div>
       </q-banner>
 
       <q-card flat bordered class="shadow-1 rounded-borders">
         <q-card-section class="q-pa-lg">
-          <q-form @submit.prevent="guardar" class="q-gutter-md">
+          <q-form ref="formRef" @submit="guardar" class="q-gutter-md">
             <div class="row q-col-gutter-md">
               <div class="col-12 col-sm-6">
                 <q-select
                   outlined
                   dense
-                  v-model="form.tipoDoc"
-                  :options="opcionesDoc"
-                  emit-value
-                  map-options
-                  label="Tipo de documento *"
-                  :rules="[val => !!val || 'Seleccione el tipo de documento']"
+                  v-model="form.tipo"
+                  :options="['Bus', 'Buseta', 'Microbús']"
+                  label="Tipo de vehículo *"
+                  lazy-rules
+                  :rules="[val => !!val || 'Seleccione el tipo de vehículo']"
                 />
               </div>
 
@@ -38,24 +40,30 @@
                 <q-input
                   outlined
                   dense
-                  v-model="form.documento"
-                  label="Número de documento *"
-                  placeholder="1020304050"
+                  v-model="form.placa"
+                  label="Placa *"
+                  placeholder="TRD459"
+                  maxlength="7"
+                  lazy-rules
                   :rules="[
-                    val => !!val?.trim() || 'El documento es obligatorio',
-                    val => !store.documentoExiste(val) || 'Este documento ya está registrado'
+                    val => !!val?.trim() || 'La placa es obligatoria',
+                    val => !store.placaExiste(val) || 'La placa ya está registrada'
                   ]"
                 />
               </div>
 
-              <div class="col-12">
+              <div class="col-12 col-sm-6">
                 <q-input
                   outlined
                   dense
-                  v-model="form.nombre"
-                  label="Nombre completo *"
-                  placeholder="Nombres y Apellidos"
-                  :rules="[val => !!val?.trim() || 'El nombre es obligatorio']"
+                  v-model="form.numeroSerie"
+                  label="Número de serie *"
+                  placeholder="SER-001"
+                  lazy-rules
+                  :rules="[
+                    val => !!val?.trim() || 'El número de serie es obligatorio',
+                    val => !store.serieExiste(val) || 'El número de serie ya existe'
+                  ]"
                 />
               </div>
 
@@ -63,22 +71,13 @@
                 <q-input
                   outlined
                   dense
-                  v-model="form.telefono"
-                  label="Teléfono *"
-                  placeholder="3101234567"
-                  :rules="[val => !!val?.trim() || 'El teléfono es obligatorio']"
-                />
-              </div>
-
-              <div class="col-12 col-sm-6">
-                <q-input
-                  outlined
-                  dense
-                  type="email"
-                  v-model="form.correo"
-                  label="Correo electrónico *"
-                  placeholder="correo@ejemplo.com"
-                  :rules="[val => !!val?.trim() || 'El correo es obligatorio']"
+                  type="number"
+                  v-model.number="form.capacidad"
+                  label="Capacidad (puestos) *"
+                  min="1"
+                  max="100"
+                  lazy-rules
+                  :rules="[val => (Number(val) > 0) || 'Debe ser mayor a 0']"
                 />
               </div>
 
@@ -86,16 +85,41 @@
                 <q-input
                   outlined
                   dense
-                  v-model="form.direccion"
-                  label="Dirección *"
-                  placeholder="Dirección de residencia"
-                  :rules="[val => !!val?.trim() || 'La dirección es obligatoria']"
+                  v-model="form.conductor"
+                  label="Nombre del conductor *"
+                  placeholder="Nombre completo"
+                  lazy-rules
+                  :rules="[val => !!val?.trim() || 'El conductor es obligatorio']"
+                />
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <q-input
+                  outlined
+                  dense
+                  v-model="form.serieChasis"
+                  label="Serie del chasis *"
+                  placeholder="CHS-12345"
+                  lazy-rules
+                  :rules="[val => !!val?.trim() || 'La serie del chasis es obligatoria']"
+                />
+              </div>
+
+              <div class="col-12 col-sm-6">
+                <q-input
+                  outlined
+                  dense
+                  v-model="form.serieMotor"
+                  label="Serie del motor *"
+                  placeholder="MOT-12345"
+                  lazy-rules
+                  :rules="[val => !!val?.trim() || 'La serie del motor es obligatoria']"
                 />
               </div>
             </div>
 
             <div class="row items-center q-gutter-md q-pt-md">
-              <q-btn type="submit" color="primary" icon="save" label="Guardar Cliente" no-caps unelevated />
+              <q-btn type="submit" color="primary" icon="save" label="Guardar Vehículo" no-caps unelevated />
               <q-btn flat color="grey-7" label="Limpiar" @click="limpiar" no-caps />
             </div>
           </q-form>
@@ -106,51 +130,58 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useClienteStore } from '../stores/clienteStore'
+import { ref, reactive, nextTick } from 'vue'
+import { useVehiculoStore } from '../stores/vehiculoStore'
 
-const store = useClienteStore()
+const store = useVehiculoStore()
 
-const opcionesDoc = [
-  { label: 'CC – Cédula de Ciudadanía', value: 'CC' },
-  { label: 'TI – Tarjeta de Identidad', value: 'TI' },
-  { label: 'CE – Cédula de Extranjería', value: 'CE' },
-  { label: 'PP – Pasaporte', value: 'PP' },
-  { label: 'NIT – Número de Identificación Tributaria', value: 'NIT' }
-]
+const formRef = ref(null)
 
 const form = reactive({
-  tipoDoc: '',
-  documento: '',
-  nombre: '',
-  telefono: '',
-  correo: '',
-  direccion: ''
+  tipo: '',
+  placa: '',
+  numeroSerie: '',
+  capacidad: '',
+  conductor: '',
+  serieChasis: '',
+  serieMotor: ''
 })
 
 const exito = ref(false)
+const nuevoId = ref(null)
 
-function guardar() {
+async function guardar() {
   exito.value = false
-  store.registrarCliente({
-    tipoDoc: form.tipoDoc,
-    documento: form.documento,
-    nombre: form.nombre,
-    telefono: form.telefono,
-    correo: form.correo,
-    direccion: form.direccion
+  const nuevo = store.registrarVehiculo({
+    tipo: form.tipo,
+    placa: form.placa,
+    numeroSerie: form.numeroSerie,
+    capacidad: form.capacidad,
+    conductor: form.conductor,
+    serieChasis: form.serieChasis,
+    serieMotor: form.serieMotor
   })
 
+  nuevoId.value = nuevo.id
   exito.value = true
-  limpiar()
+  await resetFormulario()
+}
+
+async function resetFormulario() {
+  form.tipo = ''
+  form.placa = ''
+  form.numeroSerie = ''
+  form.capacidad = ''
+  form.conductor = ''
+  form.serieChasis = ''
+  form.serieMotor = ''
+
+  await nextTick()
+  formRef.value?.resetValidation()
 }
 
 function limpiar() {
-  form.tipoDoc = ''
-  form.documento = ''
-  form.nombre = ''
-  form.telefono = ''
-  form.correo = ''
-  form.direccion = ''
+  exito.value = false
+  resetFormulario()
 }
 </script>
