@@ -432,7 +432,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue' // 1. Se añade onMounted
 import { useViajeStore } from '../stores/viajeStore'
 import { useVehiculoStore } from '../stores/vehiculoStore'
 import { useClienteStore } from '../stores/clienteStore'
@@ -443,6 +443,16 @@ const viajeStore = useViajeStore()
 const vehiculoStore = useVehiculoStore()
 const clienteStore = useClienteStore()
 const ventaStore = useVentaStore()
+
+// 2. Se ejecuta la carga de viajes y ventas reales al abrir la pantalla
+onMounted(() => {
+  if (viajeStore.cargarViajes) {
+    viajeStore.cargarViajes()
+  }
+  if (ventaStore.cargarVentas) {
+    ventaStore.cargarVentas()
+  }
+})
 
 const paso = ref(1)
 const viajeSeleccionado = ref(null)
@@ -481,7 +491,7 @@ const vehiculoDelViaje = computed(() =>
 )
 
 const puestosOcupados = computed(() =>
-  viajeSeleccionado.value ? ventaStore.puestosOcupadosPorViaje(viajeSeleccionado.value.id) : []
+  viajeSeleccionado.value ? ventaStore.puestosOcupadosPorViaje(viajeSeleccionado.value._id || viajeSeleccionado.value.id) : []
 )
 
 function getVehiculo(id) {
@@ -489,7 +499,7 @@ function getVehiculo(id) {
 }
 
 function getOcupados(viaje) {
-  return ventaStore.puestosOcupadosPorViaje(viaje.id).length
+  return ventaStore.puestosOcupadosPorViaje(viaje._id || viaje.id).length
 }
 
 function getDisponibles(viaje) {
@@ -527,13 +537,20 @@ function onSeleccionarPuesto(puesto) {
   puestoSeleccionado.value = puesto
 }
 
-function confirmarVenta() {
+// 3. Confirmación asíncrona compatible con el id de MongoDB (_id) y datos en español e inglés
+async function confirmarVenta() {
   errorVenta.value = ''
   try {
-    const nueva = ventaStore.crearVenta({
-      viajeId: viajeSeleccionado.value.id,
+    const nueva = await ventaStore.crearVenta({
+      viajeId: viajeSeleccionado.value._id || viajeSeleccionado.value.id,
+      tripId: viajeSeleccionado.value._id || viajeSeleccionado.value.id,
       clienteId: clienteSeleccionado.value.id,
+      clienteNombre: clienteSeleccionado.value.nombre,
+      customerName: clienteSeleccionado.value.nombre,
+      clienteDoc: clienteSeleccionado.value.documento,
+      customerDoc: clienteSeleccionado.value.documento,
       puestoId: puestoSeleccionado.value.numero,
+      seatNumber: puestoSeleccionado.value.numero,
       precio: viajeSeleccionado.value.precio,
       descripcion: descripcionOpcional.value
     })
@@ -557,13 +574,3 @@ function reiniciar() {
   errorVenta.value = ''
 }
 </script>
-
-<style scoped>
-.transition-card {
-  transition: all 0.2s ease;
-}
-.selected-card {
-  border: 2px solid #1976D2 !important;
-  background-color: #E3F2FD !important;
-}
-</style>
