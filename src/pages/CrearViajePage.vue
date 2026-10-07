@@ -19,7 +19,7 @@
 
       <q-card flat bordered class="shadow-1 rounded-borders">
         <q-card-section class="q-pa-lg">
-          <q-form @submit.prevent="guardar" class="q-gutter-md">
+          <q-form ref="formRef" @submit="guardar" class="q-gutter-md">
             <div class="row q-col-gutter-md">
               <div class="col-12 col-sm-6">
                 <q-input
@@ -28,6 +28,7 @@
                   v-model="form.origen"
                   label="Ciudad de origen *"
                   placeholder="Ej: Bogotá"
+                  lazy-rules
                   :rules="[val => !!val?.trim() || 'El origen es obligatorio']"
                 />
               </div>
@@ -39,6 +40,7 @@
                   v-model="form.destino"
                   label="Ciudad de destino *"
                   placeholder="Ej: Medellín"
+                  lazy-rules
                   :rules="[val => !!val?.trim() || 'El destino es obligatorio']"
                 />
               </div>
@@ -51,6 +53,7 @@
                   v-model="form.fecha"
                   label="Fecha de salida *"
                   stack-label
+                  lazy-rules
                   :rules="[val => !!val || 'La fecha es obligatoria']"
                 />
               </div>
@@ -63,6 +66,7 @@
                   v-model="form.hora"
                   label="Hora de salida *"
                   stack-label
+                  lazy-rules
                   :rules="[val => !!val || 'La hora es obligatoria']"
                 />
               </div>
@@ -76,6 +80,7 @@
                   emit-value
                   map-options
                   label="Vehículo asignado *"
+                  lazy-rules
                   :rules="[val => !!val || 'Debe asignar un vehículo']"
                   @update:model-value="onVehiculoChange"
                 />
@@ -99,6 +104,7 @@
                   label="Precio del tiquete ($ COP) *"
                   prefix="$"
                   min="0"
+                  lazy-rules
                   :rules="[val => (Number(val) > 0) || 'El precio debe ser mayor a 0']"
                 />
               </div>
@@ -126,12 +132,14 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, nextTick } from 'vue'
 import { useViajeStore } from '../stores/viajeStore'
 import { useVehiculoStore } from '../stores/vehiculoStore'
 
 const viajeStore = useViajeStore()
 const vehiculoStore = useVehiculoStore()
+
+const formRef = ref(null)
 
 const vehiculos = computed(() => vehiculoStore.vehiculos)
 
@@ -160,7 +168,7 @@ function onVehiculoChange(val) {
   vehiculoSeleccionado.value = vehiculoStore.obtenerVehiculo(val)
 }
 
-function guardar() {
+async function guardar() {
   exito.value = false
   const nuevo = viajeStore.crearViaje({
     origen: form.origen,
@@ -174,10 +182,10 @@ function guardar() {
 
   codigoCreado.value = nuevo.codigo
   exito.value = true
-  limpiar()
+  await resetFormulario()
 }
 
-function limpiar() {
+async function resetFormulario() {
   form.origen = ''
   form.destino = ''
   form.fecha = ''
@@ -186,5 +194,13 @@ function limpiar() {
   form.precio = ''
   form.estado = 'Programado'
   vehiculoSeleccionado.value = null
+
+  await nextTick()
+  formRef.value?.resetValidation()
+}
+
+function limpiar() {
+  exito.value = false
+  resetFormulario()
 }
 </script>
