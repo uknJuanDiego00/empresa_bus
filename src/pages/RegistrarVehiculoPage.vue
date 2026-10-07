@@ -22,7 +22,7 @@
 
       <q-card flat bordered class="shadow-1 rounded-borders">
         <q-card-section class="q-pa-lg">
-          <q-form @submit.prevent="guardar" class="q-gutter-md">
+          <q-form ref="formRef" @submit="guardar" class="q-gutter-md">
             <div class="row q-col-gutter-md">
               <div class="col-12 col-sm-6">
                 <q-select
@@ -31,6 +31,7 @@
                   v-model="form.tipo"
                   :options="['Bus', 'Buseta', 'Microbús']"
                   label="Tipo de vehículo *"
+                  lazy-rules
                   :rules="[val => !!val || 'Seleccione el tipo de vehículo']"
                 />
               </div>
@@ -43,6 +44,7 @@
                   label="Placa *"
                   placeholder="TRD459"
                   maxlength="7"
+                  lazy-rules
                   :rules="[
                     val => !!val?.trim() || 'La placa es obligatoria',
                     val => !store.placaExiste(val) || 'La placa ya está registrada'
@@ -57,6 +59,7 @@
                   v-model="form.numeroSerie"
                   label="Número de serie *"
                   placeholder="SER-001"
+                  lazy-rules
                   :rules="[
                     val => !!val?.trim() || 'El número de serie es obligatorio',
                     val => !store.serieExiste(val) || 'El número de serie ya existe'
@@ -73,6 +76,7 @@
                   label="Capacidad (puestos) *"
                   min="1"
                   max="100"
+                  lazy-rules
                   :rules="[val => (Number(val) > 0) || 'Debe ser mayor a 0']"
                 />
               </div>
@@ -84,6 +88,7 @@
                   v-model="form.conductor"
                   label="Nombre del conductor *"
                   placeholder="Nombre completo"
+                  lazy-rules
                   :rules="[val => !!val?.trim() || 'El conductor es obligatorio']"
                 />
               </div>
@@ -95,6 +100,7 @@
                   v-model="form.serieChasis"
                   label="Serie del chasis *"
                   placeholder="CHS-12345"
+                  lazy-rules
                   :rules="[val => !!val?.trim() || 'La serie del chasis es obligatoria']"
                 />
               </div>
@@ -106,6 +112,7 @@
                   v-model="form.serieMotor"
                   label="Serie del motor *"
                   placeholder="MOT-12345"
+                  lazy-rules
                   :rules="[val => !!val?.trim() || 'La serie del motor es obligatoria']"
                 />
               </div>
@@ -123,10 +130,12 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, nextTick } from 'vue'
 import { useVehiculoStore } from '../stores/vehiculoStore'
 
 const store = useVehiculoStore()
+
+const formRef = ref(null)
 
 const form = reactive({
   tipo: '',
@@ -141,7 +150,7 @@ const form = reactive({
 const exito = ref(false)
 const nuevoId = ref(null)
 
-function guardar() {
+async function guardar() {
   exito.value = false
   const nuevo = store.registrarVehiculo({
     tipo: form.tipo,
@@ -155,10 +164,10 @@ function guardar() {
 
   nuevoId.value = nuevo.id
   exito.value = true
-  limpiar()
+  await resetFormulario()
 }
 
-function limpiar() {
+async function resetFormulario() {
   form.tipo = ''
   form.placa = ''
   form.numeroSerie = ''
@@ -166,5 +175,13 @@ function limpiar() {
   form.conductor = ''
   form.serieChasis = ''
   form.serieMotor = ''
+
+  await nextTick()
+  formRef.value?.resetValidation()
+}
+
+function limpiar() {
+  exito.value = false
+  resetFormulario()
 }
 </script>
