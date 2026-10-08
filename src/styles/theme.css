@@ -1,0 +1,403 @@
+/* ========================================================
+   VIABUS DESIGN SYSTEM - PALETA ERGONÓMICA ANTI-FATIGA
+   Modo Claro Suave & Modo Oscuro Ergonómico
+   ======================================================== */
+
+:root {
+  /* MODO CLARO SUAVE (Amigable con la vista) */
+  --vb-bg-main: #F4F6F7;          /* Gris ceniza suave (evita brillo #FFFFFF) */
+  --vb-bg-surface: #FDFEFE;       /* Blanco marfil/hueso para tarjetas */
+  --vb-bg-surface-hover: #EAEDED;
+  --vb-bg-elevated: #FFFFFF;
+  
+  --vb-text-primary: #2C3E50;     /* Azul medianoche (no negro puro para evitar vibración) */
+  --vb-text-secondary: #566573;   /* Gris pizarra para subtítulos y metadatos */
+  --vb-text-muted: #7F8C8D;
+  
+  --vb-primary: #2471A3;          /* Azul relajante */
+  --vb-primary-hover: #1B4F72;
+  --vb-primary-soft: #EBF5FB;
+  
+  --vb-pine: #0E6251;             /* Verde pino suave */
+  --vb-pine-soft: #E8F8F5;
+  
+  --vb-warning: #D68910;          /* Ámbar suave para reservas pendientes */
+  --vb-warning-soft: #FEF9E7;
+  
+  --vb-danger: #C0392B;           /* Rojo terracota suave */
+  --vb-danger-soft: #FDEDEC;
+  
+  --vb-border: #D5DBDB;           /* Borde suave armonioso */
+  --vb-border-light: #EBEDEF;
+  
+  --vb-shadow-sm: 0 1px 3px rgba(44, 62, 80, 0.06);
+  --vb-shadow-md: 0 4px 12px rgba(44, 62, 80, 0.08);
+  --vb-shadow-lg: 0 8px 24px rgba(44, 62, 80, 0.10);
+  
+  --vb-sidebar-bg: #1C2833;       /* Azul petróleo oscuro para el menú móvil */
+  --vb-sidebar-border: #2C3E50;
+}
+
+/* ========================================================
+   MODO OSCURO ERGONÓMICO (Ideal para consultas nocturnas)
+   ======================================================== */
+body.body--dark {
+  --vb-bg-main: #1A252C;          /* Azul pizarra oscuro ergonómico */
+  --vb-bg-surface: #22303A;       /* Superficie oscura suave */
+  --vb-bg-surface-hover: #2C3D49;
+  --vb-bg-elevated: #263642;
+  
+  --vb-text-primary: #E5E7E9;     /* Blanco grisáceo (reduce drásticamente el brillo) */
+  --vb-text-secondary: #BDC3C7;   /* Gris claro */
+  --vb-text-muted: #85929E;
+  
+  --vb-primary: #5DADE2;          /* Celeste mate relajante */
+  --vb-primary-hover: #3498DB;
+  --vb-primary-soft: rgba(93, 173, 226, 0.15);
+  
+  --vb-pine: #1ABC9C;             /* Turquesa pino */
+  --vb-pine-soft: rgba(26, 188, 156, 0.15);
+  
+  --vb-warning: #F39C12;          /* Ámbar para elementos clicables y pendientes */
+  --vb-warning-soft: rgba(243, 156, 18, 0.15);
+  
+  --vb-danger: #E74C3C;
+  --vb-danger-soft: rgba(231, 76, 60, 0.15);
+  
+  --vb-border: #2E4053;
+  --vb-border-light: #283747;
+  
+  --vb-shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.25);
+  --vb-shadow-md: 0 4px 14px rgba(0, 0, 0, 0.35);
+  --vb-shadow-lg: 0 8px 26px rgba(0, 0, 0, 0.45);
+  
+  --vb-sidebar-bg: #141D23;
+  --vb-sidebar-border: #22303A;
+}
+
+/* Reset y Base */
+body {
+  background-color: var(--vb-bg-main) !important;
+  color: var(--vb-text-primary) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  letter-spacing: -0.01em;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Quasar brand colors override para evitar brillos */
+.text-primary {
+  color: var(--vb-primary) !important;
+}
+.bg-primary {
+  background-color: var(--vb-primary) !important;
+}
+.bg-positive {
+  background-color: var(--vb-pine) !important;
+}
+.text-positive {
+  color: var(--vb-pine) !important;
+}
+
+/* ========================================================
+   OVERRIDE MODO OSCURO GLOBAL PARA CLASES QUASAR & UTILIDADES
+   Evita textos oscuros ilegibles y fondos blancos deslumbrantes
+   ======================================================== */
+body.body--dark .text-dark,
+body.body--dark .text-grey-10,
+body.body--dark .text-grey-9,
+body.body--dark .text-grey-8 {
+  color: var(--vb-text-primary) !important;
+}
+
+body.body--dark .text-grey-7,
+body.body--dark .text-grey-6 {
+  color: var(--vb-text-secondary) !important;
+}
+
+body.body--dark .text-grey-5,
+body.body--dark .text-grey-4 {
+  color: var(--vb-text-muted) !important;
+}
+
+/* Quasar backgrounds que se quedaban blancos */
+body.body--dark .bg-white {
+  background-color: var(--vb-bg-surface) !important;
+  color: var(--vb-text-primary) !important;
+}
+
+body.body--dark .bg-grey-1,
+body.body--dark .bg-grey-2 {
+  background-color: var(--vb-bg-surface-hover) !important;
+  color: var(--vb-text-primary) !important;
+}
+
+body.body--dark .bg-grey-3 {
+  background-color: var(--vb-bg-elevated) !important;
+  color: var(--vb-text-primary) !important;
+}
+
+/* Tarjetas y Tablas Quasar en Modo Oscuro */
+body.body--dark .q-card {
+  background-color: var(--vb-bg-surface) !important;
+  color: var(--vb-text-primary) !important;
+  border-color: var(--vb-border) !important;
+}
+
+body.body--dark .q-table__card,
+body.body--dark .q-table__container {
+  background-color: var(--vb-bg-surface) !important;
+  color: var(--vb-text-primary) !important;
+  border-color: var(--vb-border) !important;
+}
+
+body.body--dark .q-table thead tr,
+body.body--dark .q-table tbody tr {
+  border-color: var(--vb-border) !important;
+}
+
+body.body--dark .q-table th {
+  color: var(--vb-text-secondary) !important;
+  border-color: var(--vb-border) !important;
+  background-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+body.body--dark .q-table td {
+  color: var(--vb-text-primary) !important;
+  border-color: var(--vb-border) !important;
+}
+
+body.body--dark .q-table--bordered {
+  border: 1px solid var(--vb-border) !important;
+}
+
+body.body--dark .q-separator {
+  background-color: var(--vb-border) !important;
+}
+
+body.body--dark .q-menu {
+  background-color: var(--vb-bg-elevated) !important;
+  color: var(--vb-text-primary) !important;
+  border: 1px solid var(--vb-border);
+}
+
+/* Campos de entrada Quasar (q-input, q-select) en Modo Oscuro */
+body.body--dark .q-field--outlined .q-field__control {
+  background-color: var(--vb-bg-elevated) !important;
+  color: var(--vb-text-primary) !important;
+}
+
+body.body--dark .q-field--outlined .q-field__control:before {
+  border-color: var(--vb-border) !important;
+}
+
+body.body--dark .q-field--outlined:hover .q-field__control:before {
+  border-color: var(--vb-primary) !important;
+}
+
+body.body--dark .q-field__native,
+body.body--dark .q-field__input {
+  color: var(--vb-text-primary) !important;
+}
+
+body.body--dark .q-field__label {
+  color: var(--vb-text-secondary) !important;
+}
+
+body.body--dark .q-field__prefix,
+body.body--dark .q-field__suffix {
+  color: var(--vb-text-secondary) !important;
+}
+
+body.body--dark .q-field__marginal {
+  color: var(--vb-text-secondary) !important;
+}
+
+body.body--dark input::placeholder,
+body.body--dark .q-placeholder {
+  color: var(--vb-text-muted) !important;
+}
+
+/* Clases de Tarjetas y Componentes VIABUS */
+.vb-card {
+  background: var(--vb-bg-surface) !important;
+  border: 1px solid var(--vb-border) !important;
+  border-radius: 14px;
+  box-shadow: var(--vb-shadow-sm);
+  color: var(--vb-text-primary) !important;
+  transition: all 0.2s ease;
+}
+
+.vb-card-elevated {
+  background: var(--vb-bg-elevated) !important;
+  border: 1px solid var(--vb-border) !important;
+  border-radius: 14px;
+  box-shadow: var(--vb-shadow-md);
+  color: var(--vb-text-primary) !important;
+}
+
+/* KPI Stat Cards (Dashboard) */
+.stat-card {
+  background: var(--vb-bg-surface);
+  border: 1px solid var(--vb-border);
+  border-radius: 12px;
+  padding: 16px 18px;
+  box-shadow: var(--vb-shadow-sm);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--vb-shadow-md);
+  border-color: var(--vb-primary);
+}
+
+.stat-card-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--vb-text-secondary);
+}
+
+.stat-icon-wrapper {
+  color: var(--vb-primary);
+  opacity: 0.9;
+}
+
+.stat-card-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--vb-text-primary);
+  line-height: 1.2;
+  margin: 6px 0;
+}
+
+.stat-card-sub {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--vb-text-muted);
+}
+
+/* Empty State Reutilizable */
+.empty-state-box {
+  text-align: center;
+  padding: 36px 20px;
+  background: var(--vb-bg-main);
+  border: 1px dashed var(--vb-border);
+  border-radius: 12px;
+}
+
+.empty-state-icon {
+  margin-bottom: 12px;
+  color: var(--vb-primary);
+}
+
+.empty-state-title {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--vb-text-primary);
+  margin-bottom: 4px;
+}
+
+.empty-state-desc {
+  font-size: 13px;
+  color: var(--vb-text-secondary);
+  margin-bottom: 16px;
+}
+
+/* Centro de Búsqueda y Filtros Unificado */
+.search-filter-hub {
+  background: var(--vb-bg-surface) !important;
+  border: 1px solid var(--vb-border) !important;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: var(--vb-shadow-sm);
+  margin-bottom: 24px;
+}
+
+.search-filter-hub .hub-header {
+  border-bottom: 1px solid var(--vb-border-light);
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+
+.search-field-unified {
+  background: var(--vb-bg-elevated) !important;
+  border-radius: 10px;
+}
+
+/* Tarjetas de Viaje */
+.trip-select-card {
+  background: var(--vb-bg-surface) !important;
+  border: 1.5px solid var(--vb-border) !important;
+  border-radius: 14px;
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  color: var(--vb-text-primary) !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.trip-select-card:hover {
+  border-color: var(--vb-primary) !important;
+  transform: translateY(-3px);
+  box-shadow: var(--vb-shadow-md);
+}
+
+.trip-select-card.trip-select-active {
+  border: 2px solid var(--vb-primary) !important;
+  background-color: var(--vb-primary-soft) !important;
+  box-shadow: 0 0 0 3px rgba(36, 113, 163, 0.18), var(--vb-shadow-md);
+}
+
+/* Píldoras e Insignias */
+.trip-code-pill {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--vb-bg-main);
+  color: var(--vb-text-primary);
+  border: 1px solid var(--vb-border);
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.company-badge {
+  background: var(--vb-bg-main) !important;
+  color: var(--vb-text-primary) !important;
+  border: 1px solid var(--vb-border) !important;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.route-metrics-bar {
+  background: var(--vb-bg-main) !important;
+  border: 1px solid var(--vb-border-light) !important;
+  border-radius: 8px;
+}
+
+/* Barra de Acción Flotante / Inmediata al Seleccionar Viaje */
+.trip-selection-action-bar {
+  position: sticky;
+  top: 72px;
+  z-index: 20;
+  background: var(--vb-bg-surface);
+  border: 1.5px solid var(--vb-primary);
+  border-radius: 12px;
+  box-shadow: var(--vb-shadow-lg);
+  padding: 12px 18px;
+  margin-bottom: 20px;
+  animation: slideDown 0.25s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
