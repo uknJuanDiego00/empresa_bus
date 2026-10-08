@@ -1,0 +1,312 @@
+/* VIABUS Enterprise Theme Styles */
+:root {
+  --vb-bg: #F8F9FA;
+  --vb-surface: #FFFFFF;
+  --vb-sidebar: #111111;
+  --vb-sidebar-surface: #18181B;
+  --vb-sidebar-hover: #27272A;
+  --vb-sidebar-border: #27272A;
+  --vb-sidebar-text: #E4E4E7;
+  --vb-sidebar-muted: #A1A1AA;
+  
+  --vb-text-primary: #18181B;
+  --vb-text-secondary: #71717A;
+  --vb-text-muted: #A1A1AA;
+  
+  --vb-border: #E4E4E7;
+  --vb-border-light: #F4F4F5;
+  
+  --vb-primary: #2563EB;
+  --vb-primary-hover: #1D4ED8;
+  --vb-primary-light: #EFF6FF;
+  
+  --vb-success: #10B981;
+  --vb-success-light: #ECFDF5;
+  --vb-warning: #F59E0B;
+  --vb-warning-light: #FFFBEB;
+  --vb-danger: #EF4444;
+  --vb-danger-light: #FEF2F2;
+  --vb-info: #0284C7;
+  --vb-info-light: #F0F9FF;
+  
+  --vb-radius-sm: 6px;
+  --vb-radius-md: 10px;
+  --vb-radius-lg: 14px;
+  --vb-radius-xl: 18px;
+  
+  --vb-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --vb-shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.07), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --vb-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+  background-color: var(--vb-bg) !important;
+  color: var(--vb-text-primary) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings typography */
+h1, h2, h3, h4, h5, h6, .text-h4, .text-h5, .text-h6 {
+  font-family: 'Inter', sans-serif !important;
+  color: var(--vb-text-primary) !important;
+  letter-spacing: -0.02em;
+}
+
+/* Base Card Styling */
+.vb-card {
+  background: var(--vb-surface) !important;
+  border: 1px solid var(--vb-border) !important;
+  border-radius: var(--vb-radius-lg) !important;
+  box-shadow: var(--vb-shadow-xs) !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vb-card-hover:hover {
+  box-shadow: var(--vb-shadow-md) !important;
+  border-color: #D4D4D8 !important;
+}
+
+/* Enterprise Stat Card */
+.stat-card {
+  background: #FFFFFF;
+  border: 1px solid var(--vb-border);
+  border-radius: var(--vb-radius-lg);
+  padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  box-shadow: var(--vb-shadow-xs);
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--vb-shadow-md);
+  border-color: #D4D4D8;
+}
+
+.stat-card-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--vb-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+
+.stat-card-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--vb-text-primary);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+}
+
+.stat-card-sub {
+  font-size: 12px;
+  color: var(--vb-text-secondary);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F4F4F5;
+  color: var(--vb-text-primary);
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover .stat-icon-wrapper {
+  background: var(--vb-primary-light);
+  color: var(--vb-primary);
+}
+
+/* Tables SaaS Refinements */
+.q-table__container {
+  border-radius: var(--vb-radius-lg) !important;
+  border: 1px solid var(--vb-border) !important;
+  box-shadow: var(--vb-shadow-xs) !important;
+  background: #FFFFFF !important;
+}
+
+.q-table thead tr, .q-table tbody td {
+  height: 48px;
+}
+
+.q-table thead th {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  color: var(--vb-text-secondary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  background-color: #FAFAFA !important;
+  border-bottom: 1px solid var(--vb-border) !important;
+  padding: 12px 16px !important;
+}
+
+.q-table tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+.q-table tbody tr:hover {
+  background-color: #F8F9FA !important;
+}
+
+.q-table tbody td {
+  font-size: 13.5px !important;
+  color: var(--vb-text-primary) !important;
+  border-bottom: 1px solid var(--vb-border-light) !important;
+  padding: 12px 16px !important;
+}
+
+/* Quasar Inputs Modern Look */
+.q-field--outlined .q-field__control {
+  border-radius: var(--vb-radius-md) !important;
+  border-color: var(--vb-border) !important;
+  background: #FFFFFF !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.q-field--outlined.q-field--focused .q-field__control {
+  border-color: var(--vb-primary) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12) !important;
+}
+
+.q-field--outlined .q-field__native, .q-field--outlined .q-field__input {
+  font-size: 14px;
+  color: var(--vb-text-primary);
+}
+
+.q-field__label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--vb-text-secondary);
+}
+
+/* Badges & Chips */
+.q-badge {
+  font-size: 11.5px !important;
+  font-weight: 600 !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+  letter-spacing: 0.02em;
+}
+
+/* Status Semantic Badges */
+.badge-status-programado {
+  background-color: #EFF6FF !important;
+  color: #1D4ED8 !important;
+  border: 1px solid #BFDBFE !important;
+}
+
+.badge-status-disponible {
+  background-color: #ECFDF5 !important;
+  color: #047857 !important;
+  border: 1px solid #A7F3D0 !important;
+}
+
+.badge-status-completo {
+  background-color: #FEF2F2 !important;
+  color: #B91C1C !important;
+  border: 1px solid #FECACA !important;
+}
+
+.badge-status-cancelado {
+  background-color: #FFFBEB !important;
+  color: #B45309 !important;
+  border: 1px solid #FDE68A !important;
+}
+
+.badge-status-finalizado {
+  background-color: #F4F4F5 !important;
+  color: #52525B !important;
+  border: 1px solid #E4E4E7 !important;
+}
+
+/* Buttons Refinement */
+.q-btn {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border-radius: var(--vb-radius-md) !important;
+  transition: all 0.18s ease;
+}
+
+.btn-primary {
+  background-color: var(--vb-primary) !important;
+  color: #FFFFFF !important;
+}
+
+.btn-primary:hover {
+  background-color: var(--vb-primary-hover) !important;
+}
+
+.btn-secondary {
+  background-color: #FFFFFF !important;
+  color: var(--vb-text-primary) !important;
+  border: 1px solid var(--vb-border) !important;
+}
+
+.btn-secondary:hover {
+  background-color: #F4F4F5 !important;
+  border-color: #D4D4D8 !important;
+}
+
+/* Empty State Wrapper */
+.empty-state-box {
+  padding: 48px 24px;
+  text-align: center;
+  background: #FFFFFF;
+  border-radius: var(--vb-radius-lg);
+  border: 1px dashed var(--vb-border);
+}
+
+.empty-state-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #F4F4F5;
+  color: var(--vb-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.empty-state-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--vb-text-primary);
+  margin-bottom: 4px;
+}
+
+.empty-state-desc {
+  font-size: 13.5px;
+  color: var(--vb-text-secondary);
+  max-width: 380px;
+  margin: 0 auto 16px auto;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #D4D4D8;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #A1A1AA;
+}
