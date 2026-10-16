@@ -17,12 +17,8 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import router from './router'
 import App from './App.vue'
 
-export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  timeout: 30000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || 'https://via-bus-backend.onrender.com/api'
 })
 
 
