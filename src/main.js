@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import { Quasar, Notify, Dialog, Loading } from 'quasar'
 import quasarLang from 'quasar/lang/es'
+import axios from 'axios'
 
 // Material Icons de Quasar (sin emojis)
 import '@quasar/extras/material-icons/material-icons.css'
@@ -16,10 +17,26 @@ import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import router from './router'
 import App from './App.vue'
 
+// Instancia de axios con la URL del backend
+export const api = axios.create({
+  baseURL: 'https://via-bus-backend.onrender.com/api',
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 
 const app = createApp(App)
+
+// Disponible en componentes como this.$api / this.$axios
+app.config.globalProperties.$axios = axios
+app.config.globalProperties.$api = api
+
+// Disponible en <script setup> con inject('api')
+app.provide('api', api)
 
 app.use(pinia)
 app.use(router)
@@ -46,3 +63,4 @@ app.use(Quasar, {
 })
 
 app.mount('#app')
+
