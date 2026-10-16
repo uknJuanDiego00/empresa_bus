@@ -41,6 +41,7 @@
                   new-value-mode="add-unique"
                   :options="['VIABUS Express', 'Copetran', 'Berlinas del Fonce', 'Expreso Bolivariano', 'Rápido Ochoa', 'Coomotor']"
                   label="Empresa transportadora *"
+                  placeholder="Seleccione o escriba la empresa"
                   lazy-rules
                   :rules="[val => !!val?.trim() || 'La empresa es obligatoria']"
                 >
@@ -55,7 +56,7 @@
                   outlined
                   dense
                   v-model="form.tipo"
-                  :options="['Microbús', 'Buseta', 'Bus']"
+                  :options="['Bus', 'Buseta', 'Microbús']"
                   label="Tipo de vehículo *"
                   lazy-rules
                   :rules="[val => !!val || 'Seleccione el tipo de vehículo']"
@@ -113,7 +114,6 @@
                     val => (val !== null && val !== undefined && val !== '') || 'La capacidad es obligatoria',
                     validarCapacidadRegla
                   ]"
-                  @update:model-value="onCapacidadChange"
                 />
               </div>
 
@@ -158,64 +158,6 @@
               </div>
             </div>
 
-            <!-- SECCIÓN ADICIONAL PARA BUSES: DISTRIBUCIÓN DE PISOS (SOLO SI CUMPLE MÍNIMO 60 Y MÁXIMO 80 PUESTOS) -->
-            <div v-if="esDoblePiso" class="q-mt-md">
-              <q-separator class="q-my-sm" />
-              <div class="text-subtitle2 text-weight-bold q-mb-xs" style="color: var(--vb-text-primary);">
-                Configuración de Dos Pisos (Bus Doble Piso: {{ form.capacidad }} puestos)
-              </div>
-              <div class="text-caption text-grey-7 q-mb-sm">
-                El segundo piso se habilita al cumplir mínimo 60 y máximo 80 puestos. El primer piso debe tener entre 35 y 40 puestos junto al baño exclusivo. El segundo piso cuenta con los puestos restantes sin baño.
-              </div>
-
-              <div class="row q-col-gutter-md items-center">
-                <div class="col-12 col-sm-6">
-                  <q-input
-                    outlined
-                    dense
-                    type="number"
-                    v-model.number="form.puestosPiso1"
-                    label="Puestos Primer Piso (con Baño, 35 a 40) *"
-                    min="35"
-                    max="40"
-                    :rules="[
-                      val => (Number(val) >= 35 && Number(val) <= 40) || 'El primer piso debe tener entre 35 y 40 puestos'
-                    ]"
-                    @update:model-value="onPiso1Change"
-                  >
-                    <template v-slot:prepend>
-                      <q-icon name="stairs" color="primary" />
-                    </template>
-                  </q-input>
-                </div>
-
-                <div class="col-12 col-sm-6" style="padding:10px;">
-                  <q-input
-                    outlined
-                    dense
-                    type="number"
-                    :model-value="puestosSegundoPisoCalculado"
-                    label="Puestos Segundo Piso (sin Baño)"
-                    readonly
-                  >
-                    <template v-slot:prepend>
-                      <q-icon name="flight_class" color="primary" />
-                    </template>
-                    <template v-slot:append>
-                      <q-badge color="grey-3" text-color="dark">Automático</q-badge>
-                    </template>
-                  </q-input>
-                </div>
-              </div>
-
-              <div class="bg-blue-1 text-primary q-pa-sm rounded-borders row items-center q-gutter-x-sm text-caption q-mt-xs">
-                <q-icon name="info" size="18px" />
-                <span>
-                  <strong>Distribución autorizada:</strong> Primer piso con {{ Number(form.puestosPiso1 || 38) }} puestos + Baño. Segundo piso con {{ puestosSegundoPisoCalculado }} puestos. Total: {{ form.capacidad }} puestos.
-                </span>
-              </div>
-            </div>
-
             <div class="row items-center q-gutter-md q-pt-md">
               <q-btn type="submit" color="primary" icon="save" label="Guardar Vehículo" no-caps unelevated />
               <q-btn flat color="grey-7" label="Limpiar" @click="limpiar" no-caps />
@@ -242,8 +184,7 @@ const form = reactive({
   capacidad: '',
   conductor: '',
   serieChasis: '',
-  serieMotor: '',
-  puestosPiso1: null
+  serieMotor: ''
 })
 
 const exito = ref(false)
@@ -259,87 +200,42 @@ const limiteMinimo = computed(() => {
 })
 
 const limiteMaximo = computed(() => {
-  return reglaActual.value ? reglaActual.value.max : 100
+  return reglaActual.value ? reglaActual.value.max : 50
 })
 
 const rangoCapacidadTexto = computed(() => {
   if (form.tipo === 'Microbús') return '10 - 20 puestos'
   if (form.tipo === 'Buseta') return '20 - 35 puestos'
-  if (form.tipo === 'Bus') return '35 a 40 (1 piso) o 60 a 80 puestos (2 pisos)'
-  return '1 a 80 puestos'
+  if (form.tipo === 'Bus') return '35 - 50 puestos (máx. 50)'
+  return '1 a 50 puestos'
 })
 
 const hintCapacidad = computed(() => {
   if (form.tipo === 'Microbús') return 'Microbús: min 10 puestos, max 20 puestos'
   if (form.tipo === 'Buseta') return 'Buseta: min 20 puestos, max 35 puestos'
-  if (form.tipo === 'Bus') return 'Bus: 35 a 40 puestos (1 piso) o 60 a 80 puestos (doble piso)'
-  return 'Seleccione primero el tipo de vehículo para ver el rango permitido'
-})
-
-const esDoblePiso = computed(() => {
-  return form.tipo === 'Bus' && Number(form.capacidad || 0) >= 60
-})
-
-const puestosSegundoPisoCalculado = computed(() => {
-  const cap = Number(form.capacidad || 0)
-  const p1 = Number(form.puestosPiso1 || 38)
-  return Math.max(0, cap - p1)
+  if (form.tipo === 'Bus') {
+    const capNum = Number(form.capacidad || 0)
+    if (capNum > 35) {
+      return `Bus: ${capNum} puestos (equipado con baño al final a la derecha y 5 puestos traseros)`
+    }
+    return 'Bus: 35 a 50 puestos (más de 35 incluye baño al final a la derecha)'
+  }
+  return 'Seleccione primero el tipo de vehículo'
 })
 
 function validarCapacidadRegla(val) {
   if (!val) return 'La capacidad es obligatoria'
-  const cap = Number(val)
-  if (form.tipo === 'Microbús') {
-    if (cap < 10 || cap > 20) return 'La capacidad debe estar entre 10 y 20 puestos'
-  } else if (form.tipo === 'Buseta') {
-    if (cap < 20 || cap > 35) return 'La capacidad debe estar entre 20 y 35 puestos'
-  } else if (form.tipo === 'Bus') {
-    if ((cap >= 35 && cap <= 40) || (cap >= 60 && cap <= 80)) {
-      return true
-    }
-    return 'Para Bus, la capacidad debe ser entre 35 y 40 puestos (1 piso) o entre 60 y 80 puestos (doble piso)'
-  } else {
-    if (cap <= 0) return 'La capacidad debe ser mayor a 0'
-  }
-  return true
+  return validarCapacidadTipo(form.tipo, val)
 }
 
 function onTipoChange(tipo) {
   if (tipo === 'Microbús') {
-    if (!form.capacidad || form.capacidad < 10 || form.capacidad > 20) {
-      form.capacidad = 15
-    }
+    if (!form.capacidad || form.capacidad < 10 || form.capacidad > 20) form.capacidad = 15
   } else if (tipo === 'Buseta') {
-    if (!form.capacidad || form.capacidad < 20 || form.capacidad > 35) {
-      form.capacidad = 25
-    }
+    if (!form.capacidad || form.capacidad < 20 || form.capacidad > 35) form.capacidad = 25
   } else if (tipo === 'Bus') {
-    // Si no tiene capacidad válida para bus, sugerir 38 (1 piso estándar)
-    const capActual = Number(form.capacidad || 0)
-    const esValida = (capActual >= 35 && capActual <= 40) || (capActual >= 60 && capActual <= 80)
-    if (!esValida) {
-      form.capacidad = 38
-    }
-    if (form.capacidad >= 60) {
-      form.puestosPiso1 = 38
-    }
+    if (!form.capacidad || form.capacidad < 35 || form.capacidad > 50) form.capacidad = 40
   }
-}
-
-function onCapacidadChange(cap) {
-  if (form.tipo === 'Bus' && cap) {
-    if (Number(cap) >= 60) {
-      if (!form.puestosPiso1 || form.puestosPiso1 < 35 || form.puestosPiso1 > 40) {
-        form.puestosPiso1 = 38
-      }
-    } else {
-      form.puestosPiso1 = null
-    }
-  }
-}
-
-function onPiso1Change() {
-  // reactividad automática vía puestosSegundoPisoCalculado
 }
 
 async function guardar() {
@@ -353,16 +249,6 @@ async function guardar() {
   }
 
   try {
-    let p1 = null
-    if (form.tipo === 'Bus') {
-      const capNum = Number(form.capacidad)
-      if (capNum >= 60) {
-        p1 = Number(form.puestosPiso1 || 38)
-      } else {
-        p1 = capNum
-      }
-    }
-
     const nuevo = await store.registrarVehiculo({
       empresa: form.empresa,
       tipo: form.tipo,
@@ -371,8 +257,7 @@ async function guardar() {
       capacidad: Number(form.capacidad),
       conductor: form.conductor,
       serieChasis: (form.serieChasis || '').toUpperCase().trim(),
-      serieMotor: (form.serieMotor || '').toUpperCase().trim(),
-      puestosPiso1: p1
+      serieMotor: (form.serieMotor || '').toUpperCase().trim()
     })
 
     nuevoId.value = nuevo.id
@@ -392,7 +277,6 @@ async function resetFormulario() {
   form.conductor = ''
   form.serieChasis = ''
   form.serieMotor = ''
-  form.puestosPiso1 = null
 
   await nextTick()
   formRef.value?.resetValidation()
