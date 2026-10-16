@@ -1,48 +1,5 @@
 <template>
   <div class="seat-map-wrapper">
-    <!-- Selector de Pisos: solo se pone segundo piso si cumple los min 60 o max 80 puestos -->
-    <div v-if="tieneDoblePiso" class="floor-toggle-wrapper q-mb-md">
-      <div class="row no-wrap full-width q-gutter-x-sm">
-        <q-btn
-          :color="pisoActivo === 1 ? 'primary' : 'grey-3'"
-          :text-color="pisoActivo === 1 ? 'white' : 'dark'"
-          class="col text-weight-bold shadow-1 floor-btn"
-          no-caps
-          unelevated
-          @click="pisoActivo = 1"
-        >
-          <q-icon name="stairs" size="18px" class="q-mr-xs" />
-          <span>PRIMER PISO</span>
-          <q-badge
-            :color="pisoActivo === 1 ? 'white' : 'primary'"
-            :text-color="pisoActivo === 1 ? 'primary' : 'white'"
-            class="q-ml-xs text-weight-bolder"
-          >
-            {{ disponiblesPiso1 }} disp.
-          </q-badge>
-        </q-btn>
-
-        <q-btn
-          :color="pisoActivo === 2 ? 'primary' : 'grey-3'"
-          :text-color="pisoActivo === 2 ? 'white' : 'dark'"
-          class="col text-weight-bold shadow-1 floor-btn"
-          no-caps
-          unelevated
-          @click="pisoActivo = 2"
-        >
-          <q-icon name="flight_class" size="18px" class="q-mr-xs" />
-          <span>SEGUNDO PISO</span>
-          <q-badge
-            :color="pisoActivo === 2 ? 'white' : 'primary'"
-            :text-color="pisoActivo === 2 ? 'primary' : 'white'"
-            class="q-ml-xs text-weight-bolder"
-          >
-            {{ disponiblesPiso2 }} disp.
-          </q-badge>
-        </q-btn>
-      </div>
-    </div>
-
     <!-- Leyenda de Estados -->
     <div class="legend-panel q-mb-md">
       <div class="legend-item">
@@ -73,18 +30,18 @@
         <span class="legend-label">Ocupado</span>
       </div>
 
-      <div class="legend-item" v-if="pisoActivo === 1">
+      <div class="legend-item">
         <span class="legend-badge badge-driver">
           <q-icon name="sports_motorsports" size="12px" />
         </span>
         <span class="legend-label">Conductor</span>
       </div>
 
-      <div class="legend-item" v-if="esBus && pisoActivo === 1">
+      <div class="legend-item" v-if="tieneBano">
         <span class="legend-badge badge-bathroom">
           <q-icon name="wc" size="12px" />
         </span>
-        <span class="legend-label">Baño</span>
+        <span class="legend-label">Baño (Final der.)</span>
       </div>
     </div>
 
@@ -97,19 +54,17 @@
       <div class="bus-chassis">
         <!-- Parte Delantera / Parabrisas -->
         <div class="bus-front-cap">
-          <div class="front-windshield" :class="{ 'windshield-piso2': pisoActivo === 2 }">
+          <div class="front-windshield">
             <div class="windshield-glare"></div>
             <div class="front-title">
-              <q-icon :name="pisoActivo === 2 ? 'flight_class' : 'navigation'" size="14px" class="q-mr-xs" />
-              <span>
-                {{ tieneDoblePiso ? (pisoActivo === 1 ? 'PRIMER PISO — FRENTE Y ACCESO' : 'SEGUNDO PISO — VISTA PANORÁMICA') : 'FRENTE DEL VEHÍCULO' }}
-              </span>
+              <q-icon name="navigation" size="14px" class="q-mr-xs rotate-90" />
+              <span>FRENTE DEL VEHÍCULO</span>
             </div>
           </div>
         </div>
 
-        <!-- Cabina Frontal (Solo en Primer Piso): Conductor (Izquierda) y Puerta/Entrada (Derecha) -->
-        <div v-if="pisoActivo === 1" class="cabin-area">
+        <!-- Cabina Frontal: Conductor (Izquierda) y Puerta/Entrada (Derecha) -->
+        <div class="cabin-area">
           <!-- Asiento del conductor -->
           <div class="driver-box" title="Puesto reservado para el conductor">
             <div class="driver-seat-visual">
@@ -137,22 +92,20 @@
 
         <!-- Separador de cabina de pasajeros -->
         <div class="cabin-divider">
-          <span class="divider-text">
-            {{ tieneDoblePiso ? `ZONA DE PASAJEROS — PISO ${pisoActivo}` : 'ZONA DE PASAJEROS' }}
-          </span>
+          <span class="divider-text">ZONA DE PASAJEROS</span>
         </div>
 
         <!-- Área de Asientos con Pasillo Central -->
         <div class="passenger-area">
           <div
             v-for="(fila, fIdx) in calcularFilas()"
-            :key="'fila-' + pisoActivo + '-' + fIdx"
+            :key="'fila-' + fIdx"
             class="seat-row"
-            :class="{ 'rear-row': fila.esUltimaFilaCinco }"
+            :class="{ 'rear-row': fila.esUltimaFilaCinco, 'row-with-bathroom': fila.tieneBano }"
           >
-            <!-- Layout regular de 4 puestos (2 izquierda + pasillo + 2 derecha) -->
+            <!-- Layout regular de puestos o fila con baño -->
             <template v-if="!fila.esUltimaFilaCinco">
-              <!-- Lado Izquierdo (2 puestos) -->
+              <!-- Lado Izquierdo (1 o 2 puestos) -->
               <div class="seat-pair left-pair">
                 <div
                   v-for="asiento in fila.izq"
@@ -160,7 +113,7 @@
                   class="seat-cell"
                   :class="getClaseAsiento(asiento)"
                   @click="onAsientoClick(asiento)"
-                  :title="`Asiento #${asiento.numero} (${esBus ? 'Piso ' + (asiento.piso || 1) + ' - ' : ''}${getNombreEstado(asiento)})`"
+                  :title="`Asiento #${asiento.numero} (${getNombreEstado(asiento)})`"
                 >
                   <div class="seat-headrest"></div>
                   <div class="seat-cushion">
@@ -175,15 +128,27 @@
                 <span class="aisle-marker">•</span>
               </div>
 
-              <!-- Lado Derecho (2 puestos) -->
-              <div class="seat-pair right-pair">
+              <!-- Lado Derecho: BAÑO (si la fila tiene baño) o Asientos derechos -->
+              <div
+                v-if="fila.tieneBano"
+                class="bathroom-cabin-right"
+                title="Servicio Sanitario / Baño (Elemento fijo no vendible)"
+              >
+                <div class="bathroom-cabin-inner">
+                  <div class="bathroom-door-handle"></div>
+                  <q-icon name="wc" size="18px" class="bathroom-wc-icon" />
+                  <span class="bathroom-label">BAÑO</span>
+                </div>
+              </div>
+
+              <div v-else class="seat-pair right-pair">
                 <div
                   v-for="asiento in fila.der"
                   :key="'asiento-' + asiento.numero"
                   class="seat-cell"
                   :class="getClaseAsiento(asiento)"
                   @click="onAsientoClick(asiento)"
-                  :title="`Asiento #${asiento.numero} (${esBus ? 'Piso ' + (asiento.piso || 1) + ' - ' : ''}${getNombreEstado(asiento)})`"
+                  :title="`Asiento #${asiento.numero} (${getNombreEstado(asiento)})`"
                 >
                   <div class="seat-headrest"></div>
                   <div class="seat-cushion">
@@ -194,7 +159,7 @@
               </div>
             </template>
 
-            <!-- Última fila completa de 5 asientos (Fondo del autobús) -->
+            <!-- Última fila completa de 5 asientos (SIEMPRE 5 puestos al fondo del autobús) -->
             <template v-else>
               <div class="rear-five-seats">
                 <div
@@ -203,7 +168,7 @@
                   class="seat-cell"
                   :class="getClaseAsiento(asiento)"
                   @click="onAsientoClick(asiento)"
-                  :title="`Asiento #${asiento.numero} (${esBus ? 'Piso ' + (asiento.piso || 1) + ' - ' : ''}${getNombreEstado(asiento)})`"
+                  :title="`Asiento #${asiento.numero} (${getNombreEstado(asiento)})`"
                 >
                   <div class="seat-headrest"></div>
                   <div class="seat-cushion">
@@ -213,20 +178,6 @@
                 </div>
               </div>
             </template>
-          </div>
-
-          <!-- BAÑO / SERVICIO SANITARIO EXCLUSIVO DEL PRIMER PISO -->
-          <div v-if="esBus && pisoActivo === 1" class="bathroom-feature-box q-mt-sm">
-            <div class="bathroom-icon-wrap">
-              <q-icon name="wc" size="20px" color="blue-grey-8" />
-            </div>
-            <div class="bathroom-info">
-              <div class="bathroom-title">BAÑO / SERVICIO SANITARIO</div>
-              <div class="bathroom-desc">Exclusivo del 1er piso • Elemento fijo no vendible</div>
-            </div>
-            <q-badge color="grey-3" text-color="blue-grey-9" class="text-weight-bold">
-              Obstáculo fijo
-            </q-badge>
           </div>
         </div>
 
@@ -239,15 +190,15 @@
       </div>
     </div>
 
-    <!-- Indicador de Puestos Seleccionados -->
-    <div v-if="selectable && tieneSeleccion" class="selected-summary-banner q-mt-md">
+    <!-- Indicador de Puesto Seleccionado -->
+    <div v-if="selectable && puestoSeleccionado" class="selected-summary-banner q-mt-md">
       <div class="row items-center justify-between no-wrap">
         <div class="row items-center q-gutter-x-sm">
           <q-icon name="airline_seat_recline_normal" color="primary" size="22px" />
           <div>
-            <div class="text-caption text-grey-7">Puestos seleccionados ({{ totalSeleccionados }}):</div>
-            <div class="text-weight-bold text-primary text-subtitle2">
-              {{ textoPuestosSeleccionados }}
+            <div class="text-caption text-grey-7">Puesto seleccionado para la compra:</div>
+            <div class="text-weight-bold text-primary text-subtitle1">
+              Asiento #{{ puestoSeleccionado.numero }}
             </div>
           </div>
         </div>
@@ -255,11 +206,11 @@
           flat
           dense
           color="negative"
-          icon="clear_all"
-          label="Limpiar selección"
+          icon="close"
+          label="Deseleccionar"
           size="sm"
           no-caps
-          @click="deseleccionarTodos"
+          @click="deseleccionar"
         />
       </div>
     </div>
@@ -267,144 +218,229 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { computed } from 'vue'
 
 const props = defineProps({
-  // Lista de puestos del vehículo
+  // Lista de puestos del vehículo (si está vacío, se generará dinámicamente)
   puestos: { type: Array, default: () => [] },
-  // Capacidad total del vehículo
+  // Capacidad total del vehículo por si no tiene arreglo explícito
   capacidad: { type: Number, default: 0 },
-  // Tipo de vehículo ('Bus', 'Buseta', 'Microbús')
   tipoVehiculo: { type: String, default: '' },
-  // Números de puestos ocupados
+  // Números de puestos ocupados (estado confirmado / pagado)
   puestosOcupados: { type: Array, default: () => [] },
-  // Números de puestos pendientes
+  // Números de puestos pendientes (reserva en proceso)
   puestosPendientes: { type: Array, default: () => [] },
-  // Puesto(s) seleccionado(s) actualmente
+  // Puesto(s) seleccionado(s) actualmente por el usuario
   puestoSeleccionado: { type: [Object, Array], default: null },
   puestosSeleccionados: { type: Array, default: () => [] },
-  // Permite interacción
+  // Permite selección interactiva o solo visualización
   selectable: { type: Boolean, default: true },
   // Nombre del conductor
   conductor: { type: String, default: '' }
 })
 
-const emit = defineEmits(['seleccionar', 'toggle', 'deseleccionar-todos'])
+const emit = defineEmits(['seleccionar'])
 
-// Piso activo actualmente en vista (1 o 2)
-const pisoActivo = ref(1)
-
-// Determinar si el vehículo es tipo Bus
-const esBus = computed(() => {
-  return props.tipoVehiculo === 'Bus' || props.capacidad >= 35
-})
-
-// Solo se muestra el botón de segundo piso si cumple con MÁS DE 60 puestos (> 60)
-const tieneDoblePiso = computed(() => {
-  if (!esBus.value) return false
-  const cap = Number(props.capacidad || 0) || (Array.isArray(props.puestos) ? props.puestos.length : 0)
-  return cap > 60
-})
-
-// Si el vehículo no cumple con más de 60 puestos, asegurar que el piso activo sea el 1
-watch(tieneDoblePiso, (tiene) => {
-  if (!tiene) {
-    pisoActivo.value = 1
+// Total de asientos disponibles para calcular equipamiento
+const totalAsientos = computed(() => {
+  if (Array.isArray(props.puestos) && props.puestos.length > 0) {
+    const com = props.puestos.filter(p => !p.esConductor)
+    if (com.length > 0) return com.length
+    return props.puestos.length
   }
-}, { immediate: true })
+  return Number(props.capacidad || 0)
+})
 
-// Normalizar la lista completa de asientos comerciales
+// Si el bus tiene más de 35 puestos, tiene baño en la parte final del bus al lado derecho
+const tieneBano = computed(() => {
+  return totalAsientos.value > 35
+})
+
+// Normalizar la lista de asientos disponibles para pasajeros
 function obtenerListaAsientosPasajeros() {
   let list = []
 
+  // 1. Si vienen puestos en props y tienen elementos
   if (Array.isArray(props.puestos) && props.puestos.length > 0) {
     list = props.puestos.filter(p => !p.esConductor)
   }
 
+  // 2. Si no hay lista pero se indicó capacidad o se necesita respaldo
   if (list.length === 0) {
-    const total = props.capacidad > 0 ? props.capacidad : 38
-    const doble = tieneDoblePiso.value
-    // Para doble piso, el primer piso tiene entre 35 y 40 puestos
-    const p1 = doble ? Math.min(40, Math.max(35, 38)) : total
+    const total = props.capacidad > 0 ? props.capacidad : 20
     for (let i = 1; i <= total; i++) {
-      list.push({
-        id: i,
-        numero: i,
-        piso: (!doble || i <= p1) ? 1 : 2,
-        esConductor: false,
-        disponible: true
-      })
+      list.push({ id: i, numero: i, esConductor: false, disponible: true })
     }
   }
 
   return list
 }
 
-// Asientos correspondientes al piso activo
-const asientosPisoActivo = computed(() => {
-  const lista = obtenerListaAsientosPasajeros()
-  if (!tieneDoblePiso.value) return lista
-  return lista.filter(a => (a.piso || 1) === pisoActivo.value)
-})
-
-// Contar disponibilidad para cada piso
-const disponiblesPiso1 = computed(() => {
-  const lista = obtenerListaAsientosPasajeros().filter(a => (a.piso || 1) === 1)
-  return lista.filter(a => !isOcupado(a) && !isPendiente(a)).length
-})
-
-const disponiblesPiso2 = computed(() => {
-  const lista = obtenerListaAsientosPasajeros().filter(a => (a.piso || 1) === 2)
-  return lista.filter(a => !isOcupado(a) && !isPendiente(a)).length
-})
-
-// Estructurar los asientos del piso activo en filas de bus
+// Estructurar los asientos en filas: SI O SI 5 puestos al final, y baño al lado derecho si > 35 puestos
 function calcularFilas() {
-  const asientos = [...asientosPisoActivo.value]
+  const asientos = [...obtenerListaAsientosPasajeros()]
   const total = asientos.length
+  if (total === 0) return []
+
+  // Si tiene 5 o menos puestos, todos quedan en la fila trasera
+  if (total <= 5) {
+    return [{
+      esUltimaFilaCinco: true,
+      tieneBano: false,
+      todos: asientos
+    }]
+  }
+
+  // 1. Los 5 últimos puestos SIEMPRE van al final en la fila trasera
+  const rearSeats = asientos.slice(total - 5)
+  const prevSeats = asientos.slice(0, total - 5)
   const filas = []
 
-  const tieneFilaTraseraCompleta = total >= 16 && (total % 4 === 1 || total % 4 === 2)
-  let cursor = 0
-
-  while (cursor < total) {
-    const restantes = total - cursor
-
-    // Última fila de 5 asientos
-    if (tieneFilaTraseraCompleta && restantes === 5) {
-      filas.push({
-        esUltimaFilaCinco: true,
-        todos: asientos.slice(cursor, cursor + 5)
-      })
-      cursor += 5
-      break
+  // 2. Si el bus tiene más de 35 puestos, tiene baño en la parte final del bus al lado derecho
+  if (tieneBano.value) {
+    // La fila inmediatamente anterior a los 5 puestos traseros tiene el baño al lado derecho.
+    // Determinamos cuántos puestos van a la izquierda del baño (1 o 2 puestos):
+    let seatsNextToBano = 2
+    if ((prevSeats.length - 1) % 4 === 0) {
+      seatsNextToBano = 1
+    } else if ((prevSeats.length - 2) % 4 === 0) {
+      seatsNextToBano = 2
+    } else if (prevSeats.length % 2 === 1) {
+      seatsNextToBano = 1
     }
 
-    // Fila estándar de 4
-    const grupo = asientos.slice(cursor, cursor + 4)
+    const normalSeats = prevSeats.slice(0, prevSeats.length - seatsNextToBano)
+    const banoRowSeats = prevSeats.slice(prevSeats.length - seatsNextToBano)
+
+    // Agrupar filas regulares anteriores
+    let c = 0
+    while (c < normalSeats.length) {
+      const rem = normalSeats.length - c
+      if (rem >= 4) {
+        const chunk = normalSeats.slice(c, c + 4)
+        filas.push({
+          esUltimaFilaCinco: false,
+          tieneBano: false,
+          izq: chunk.slice(0, 2),
+          der: chunk.slice(2, 4)
+        })
+        c += 4
+      } else if (rem === 3) {
+        const chunk = normalSeats.slice(c, c + 3)
+        filas.push({
+          esUltimaFilaCinco: false,
+          tieneBano: false,
+          izq: chunk.slice(0, 2),
+          der: chunk.slice(2, 3)
+        })
+        c += 3
+      } else if (rem === 2) {
+        const chunk = normalSeats.slice(c, c + 2)
+        filas.push({
+          esUltimaFilaCinco: false,
+          tieneBano: false,
+          izq: chunk.slice(0, 2),
+          der: []
+        })
+        c += 2
+      } else {
+        const chunk = normalSeats.slice(c, c + 1)
+        filas.push({
+          esUltimaFilaCinco: false,
+          tieneBano: false,
+          izq: chunk.slice(0, 1),
+          der: []
+        })
+        c += 1
+      }
+    }
+
+    // Fila con baño en la parte final derecha
     filas.push({
       esUltimaFilaCinco: false,
-      izq: grupo.slice(0, 2),
-      der: grupo.slice(2, 4)
+      tieneBano: true,
+      izq: banoRowSeats,
+      der: []
     })
-    cursor += 4
+  } else {
+    // Sin baño (vehículos <= 35 puestos)
+    let c = 0
+    while (c < prevSeats.length) {
+      const rem = prevSeats.length - c
+      if (rem >= 4) {
+        const chunk = prevSeats.slice(c, c + 4)
+        filas.push({
+          esUltimaFilaCinco: false,
+          tieneBano: false,
+          izq: chunk.slice(0, 2),
+          der: chunk.slice(2, 4)
+        })
+        c += 4
+      } else if (rem === 3) {
+        const chunk = prevSeats.slice(c, c + 3)
+        filas.push({
+          esUltimaFilaCinco: false,
+          tieneBano: false,
+          izq: chunk.slice(0, 2),
+          der: chunk.slice(2, 3)
+        })
+        c += 3
+      } else if (rem === 2) {
+        const chunk = prevSeats.slice(c, c + 2)
+        filas.push({
+          esUltimaFilaCinco: false,
+          tieneBano: false,
+          izq: chunk.slice(0, 2),
+          der: []
+        })
+        c += 2
+      } else {
+        const chunk = prevSeats.slice(c, c + 1)
+        filas.push({
+          esUltimaFilaCinco: false,
+          tieneBano: false,
+          izq: chunk.slice(0, 1),
+          der: []
+        })
+        c += 1
+      }
+    }
   }
+
+  // Fila trasera de 5 puestos SIEMPRE al final
+  filas.push({
+    esUltimaFilaCinco: true,
+    tieneBano: false,
+    todos: rearSeats
+  })
 
   return filas
 }
 
+function getNombreEstado(asiento) {
+  if (!asiento) return ''
+  if (asiento.esConductor) return 'Conductor'
+  if (isSeleccionado(asiento)) return 'Seleccionado'
+  if (isOcupado(asiento)) return 'Ocupado'
+  if (isPendiente(asiento)) return 'Pendiente'
+  return 'Disponible'
+}
+
+// Verificar si un puesto está ocupado (rojo)
 function isOcupado(asiento) {
   if (!asiento) return false
   const num = Number(asiento.numero || asiento.id)
   return props.puestosOcupados.includes(num) || props.puestosOcupados.includes(String(num))
 }
 
+// Verificar si un puesto está pendiente (amarillo)
 function isPendiente(asiento) {
   if (!asiento) return false
   const num = Number(asiento.numero || asiento.id)
   return props.puestosPendientes.includes(num) || props.puestosPendientes.includes(String(num))
 }
 
+// Verificar si un puesto está seleccionado por el usuario (azul)
 function isSeleccionado(asiento) {
   if (!asiento) return false
   const numActual = Number(asiento.numero || asiento.id)
@@ -431,6 +467,7 @@ function isSeleccionado(asiento) {
   return false
 }
 
+// Determinar la clase CSS de estado
 function getClaseAsiento(asiento) {
   if (!asiento) return 'seat-unavailable'
   if (asiento.esConductor) return 'seat-driver'
@@ -440,6 +477,7 @@ function getClaseAsiento(asiento) {
   return 'seat-available'
 }
 
+// Ícono representativo para cada estado
 function getIconoAsiento(asiento) {
   if (asiento.esConductor) return 'sports_motorsports'
   if (isSeleccionado(asiento)) return 'done'
@@ -448,58 +486,29 @@ function getIconoAsiento(asiento) {
   return 'event_seat'
 }
 
-function getNombreEstado(asiento) {
-  if (asiento.esConductor) return 'Conductor'
-  if (isSeleccionado(asiento)) return 'Seleccionado'
-  if (isOcupado(asiento)) return 'Ocupado'
-  if (isPendiente(asiento)) return 'Pendiente'
-  return 'Disponible'
-}
-
-// Interacción al hacer clic en un puesto (emite el puesto para alternancia/toggle)
+// Interacción al hacer clic en un puesto
 function onAsientoClick(asiento) {
   if (!props.selectable || !asiento) return
+
+  // El conductor nunca se selecciona
   if (asiento.esConductor) return
+
+  // Los puestos ocupados y pendientes están bloqueados
   if (isOcupado(asiento) || isPendiente(asiento)) return
 
+  // Si ya está seleccionado, hacer toggle (deseleccionar)
+  if (isSeleccionado(asiento)) {
+    emit('seleccionar', null)
+    return
+  }
+
+  // Si está disponible (verde), seleccionarlo
   emit('seleccionar', asiento)
-  emit('toggle', asiento)
 }
 
-function deseleccionarTodos() {
+function deseleccionar() {
   emit('seleccionar', null)
-  emit('deseleccionar-todos')
 }
-
-const tieneSeleccion = computed(() => {
-  return (Array.isArray(props.puestosSeleccionados) && props.puestosSeleccionados.length > 0) ||
-         !!props.puestoSeleccionado
-})
-
-const totalSeleccionados = computed(() => {
-  if (Array.isArray(props.puestosSeleccionados) && props.puestosSeleccionados.length > 0) {
-    return props.puestosSeleccionados.length
-  }
-  return props.puestoSeleccionado ? 1 : 0
-})
-
-const textoPuestosSeleccionados = computed(() => {
-  if (Array.isArray(props.puestosSeleccionados) && props.puestosSeleccionados.length > 0) {
-    return props.puestosSeleccionados
-      .map(s => {
-        const num = typeof s === 'object' ? s.numero : s
-        const p = typeof s === 'object' && s.piso ? ` (Piso ${s.piso})` : ''
-        return `#${num}${p}`
-      })
-      .join(', ')
-  }
-  if (props.puestoSeleccionado) {
-    const num = props.puestoSeleccionado.numero || props.puestoSeleccionado.id
-    const p = props.puestoSeleccionado.piso ? ` (Piso ${props.puestoSeleccionado.piso})` : ''
-    return `#${num}${p}`
-  }
-  return ''
-})
 </script>
 
 <style scoped>
@@ -509,19 +518,6 @@ const textoPuestosSeleccionados = computed(() => {
   align-items: center;
   user-select: none;
   width: 100%;
-}
-
-/* Selector de Pisos */
-.floor-toggle-wrapper {
-  width: 100%;
-  max-width: 420px;
-}
-
-.floor-btn {
-  font-size: 13px;
-  border-radius: 10px;
-  padding: 8px 12px;
-  transition: all 0.2s ease;
 }
 
 /* Panel de Leyenda Superior */
@@ -580,7 +576,7 @@ const textoPuestosSeleccionados = computed(() => {
 }
 
 .badge-bathroom {
-  background-color: #475569;
+  background-color: #0284c7;
 }
 
 /* Contenedor del Vehículo */
@@ -633,11 +629,6 @@ const textoPuestosSeleccionados = computed(() => {
   padding: 8px 12px;
   text-align: center;
   overflow: hidden;
-}
-
-.windshield-piso2 {
-  background: linear-gradient(180deg, #c7d2fe 0%, #e0e7ff 100%);
-  border-color: #a5b4fc;
 }
 
 .windshield-glare {
@@ -791,6 +782,53 @@ const textoPuestosSeleccionados = computed(() => {
 .seat-pair {
   display: flex;
   gap: 8px;
+  min-width: 96px;
+}
+
+/* Cabina de Baño en la parte final derecha */
+.bathroom-cabin-right {
+  width: 96px;
+  height: 48px;
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  border-radius: 8px;
+  border: 1px solid #0284c7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 5px rgba(2, 132, 199, 0.25);
+  position: relative;
+  overflow: hidden;
+  user-select: none;
+}
+
+.bathroom-cabin-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: #ffffff;
+}
+
+.bathroom-wc-icon {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+}
+
+.bathroom-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #ffffff;
+}
+
+.bathroom-door-handle {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 2px;
 }
 
 /* Pasillo central */
@@ -815,44 +853,6 @@ const textoPuestosSeleccionados = computed(() => {
   justify-content: space-between;
   width: 100%;
   gap: 6px;
-}
-
-/* Elemento Fijo: Baño del Primer Piso */
-.bathroom-feature-box {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: #f8fafc;
-  border: 2px dashed #94a3b8;
-  border-radius: 10px;
-  padding: 8px 12px;
-  cursor: not-allowed;
-}
-
-.bathroom-icon-wrap {
-  width: 32px;
-  height: 32px;
-  background: #e2e8f0;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bathroom-info {
-  flex: 1;
-}
-
-.bathroom-title {
-  font-size: 11px;
-  font-weight: 800;
-  color: #334155;
-  letter-spacing: 0.5px;
-}
-
-.bathroom-desc {
-  font-size: 9px;
-  color: #64748b;
 }
 
 /* Componente Individual de Asiento */
