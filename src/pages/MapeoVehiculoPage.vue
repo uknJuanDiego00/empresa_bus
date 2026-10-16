@@ -18,7 +18,7 @@
               <div class="text-subtitle1 text-weight-bold q-mb-xs" style="color: var(--vb-text-primary);">
                 {{ obtenerVehiculo().tipo }} — {{ obtenerVehiculo().placa }}
               </div>
-              <div class="text-caption" style="color: var(--vb-text-secondary);">Detalles técnicos y distribución de la unidad</div>
+              <div class="text-caption" style="color: var(--vb-text-secondary);">Detalles técnicos de la unidad</div>
             </q-card-section>
 
             <q-separator />
@@ -40,36 +40,31 @@
                 <span class="text-grey-6">Serie del motor:</span>
                 <span class="text-weight-bold text-mono">{{ obtenerVehiculo().serieMotor }}</span>
               </div>
+              <div v-if="obtenerVehiculo().capacidad > 35" class="row justify-between text-caption bg-blue-1 text-primary q-pa-xs rounded-borders items-center q-mt-xs">
+                <span class="text-weight-bold row items-center"><q-icon name="wc" size="15px" class="q-mr-xs" />Baño a bordo:</span>
+                <span class="text-weight-bold">Equipado (Parte final derecha)</span>
+              </div>
+            </q-card-section>
 
-              <!-- Distribución de Pisos para Buses -->
-              <template v-if="obtenerVehiculo().tipo === 'Bus'">
-                <q-separator class="q-my-xs" />
-                <div class="text-caption text-weight-bold text-primary">Configuración de la Unidad:</div>
-                <template v-if="obtenerVehiculo().capacidad > 60">
-                  <div class="row justify-between text-caption">
-                    <span class="text-grey-7">Primer Piso (con Baño fijo):</span>
-                    <strong>{{ obtenerVehiculo().puestosPiso1 || 38 }} puestos (35 a 40)</strong>
-                  </div>
-                  <div class="row justify-between text-caption">
-                    <span class="text-grey-7">Segundo Piso (sin baño):</span>
-                    <strong>{{ obtenerVehiculo().capacidad - (obtenerVehiculo().puestosPiso1 || 38) }} puestos</strong>
-                  </div>
-                  <div class="bg-blue-1 text-primary q-pa-xs rounded-borders text-caption text-weight-medium">
-                    <q-icon name="info" size="14px" class="q-mr-xs" />
-                    Bus Doble Piso: Segundo piso habilitado al cumplir más de 60 puestos (61 a 80 puestos). Baño exclusivo en primer piso.
-                  </div>
-                </template>
-                <template v-else>
-                  <div class="row justify-between text-caption">
-                    <span class="text-grey-7">Piso Único (con Baño fijo):</span>
-                    <strong>{{ obtenerVehiculo().capacidad }} puestos</strong>
-                  </div>
-                  <div class="bg-blue-1 text-primary q-pa-xs rounded-borders text-caption text-weight-medium">
-                    <q-icon name="info" size="14px" class="q-mr-xs" />
-                    Bus de Un Solo Piso: Capacidad autorizada de 35 a 40 puestos con baño exclusivo.
-                  </div>
-                </template>
-              </template>
+            <q-separator />
+
+            <q-card-section>
+              <div class="text-caption text-weight-bold q-mb-sm text-grey-8">
+                Asignación del Puesto del Conductor
+              </div>
+              <q-select
+                outlined
+                dense
+                v-model="conductorPuestoId"
+                :options="obtenerOpcionesPuestos()"
+                emit-value
+                map-options
+                label="Seleccionar puesto del conductor"
+                @update:model-value="asignarConductor"
+              />
+              <div class="text-caption text-grey-6 q-mt-xs">
+                El puesto asignado al conductor no podrá ser comercializado.
+              </div>
             </q-card-section>
           </q-card>
         </div>
@@ -105,7 +100,7 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useVehiculoStore } from '../stores/vehiculoStore'
 import SeatMap from '../components/SeatMap.vue'
@@ -113,11 +108,31 @@ import SeatMap from '../components/SeatMap.vue'
 const route = useRoute()
 const store = useVehiculoStore()
 
+const conductorPuestoId = ref(null)
+
 function obtenerVehiculo() {
   return store.obtenerVehiculo(route.params.id)
 }
 
+function obtenerOpcionesPuestos() {
+  const veh = obtenerVehiculo()
+  if (!veh || !veh.puestos) return []
+  return veh.puestos.map(p => ({
+    label: `Puesto #${p.numero}`,
+    value: p.id
+  }))
+}
+
 onMounted(async () => {
   await store.cargarVehiculos()
+  const veh = obtenerVehiculo()
+  if (veh && veh.puestos) {
+    const p = veh.puestos.find(x => x.esConductor)
+    conductorPuestoId.value = p ? p.id : null
+  }
 })
+
+function asignarConductor() {
+  store.actualizarPuestoConductor(route.params.id, conductorPuestoId.value)
+}
 </script>
