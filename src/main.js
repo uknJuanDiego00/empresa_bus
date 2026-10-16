@@ -3,39 +3,44 @@ import { Quasar, Notify, Dialog, Loading } from 'quasar'
 import quasarLang from 'quasar/lang/es'
 import axios from 'axios'
 
-// Material Icons de Quasar (sin emojis)
+// Material Icons de Quasar
 import '@quasar/extras/material-icons/material-icons.css'
 
-// Estilos Quasar y Tema Ergonómico
+// Estilos Quasar y tema ergonómico
 import 'quasar/dist/quasar.css'
 import './styles/theme.css'
 
-// Pinia y pinia-plugin-persistedstate
+// Pinia y persistencia
 import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 
+// Router y aplicación
 import router from './router'
 import App from './App.vue'
 
+// Conexión con la API mediante el archivo .env
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://via-bus-backend.onrender.com/api'
+  baseURL: import.meta.env.VITE_API_URL || 'https://via-bus-backend.onrender.com/api',
+  headers: {
+    'Content-Type': 'application/json'
+  }
 })
 
-
+// Pinia
 const pinia = createPinia()
 pinia.use(piniaPluginPersistedstate)
 
+// Crear aplicación Vue
 const app = createApp(App)
 
-// Disponible en componentes como this.$api / this.$axios
+// Axios y API disponibles globalmente
 app.config.globalProperties.$axios = axios
 app.config.globalProperties.$api = api
 
-// Disponible en <script setup> con inject('api')
+// API disponible mediante inject('api')
 app.provide('api', api)
 
-app.use(pinia)
-app.use(router)
+// Configuración de Quasar
 app.use(Quasar, {
   config: {
     dark: false,
@@ -58,5 +63,9 @@ app.use(Quasar, {
   lang: quasarLang
 })
 
-app.mount('#app')
+// Registrar Pinia y Vue Router
+app.use(pinia)
+app.use(router)
 
+// Montar aplicación
+app.mount('#app')
