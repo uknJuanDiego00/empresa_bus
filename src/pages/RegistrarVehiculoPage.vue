@@ -101,19 +101,19 @@
 
               <div class="col-12 col-sm-6">
                 <q-input
-                  outlined
-                  dense
-                  type="number"
-                  v-model.number="form.capacidad"
-                  :label="form.tipo ? `Capacidad (${rangoCapacidadTexto}) *` : 'Capacidad (puestos) *'"
-                  :min="limiteMinimo"
-                  :max="limiteMaximo"
-                  :hint="hintCapacidad"
-                  lazy-rules
-                  :rules="[
-                    val => (val !== null && val !== undefined && val !== '') || 'La capacidad es obligatoria',
-                    validarCapacidadRegla
-                  ]"
+                   outlined
+                     dense
+                     type="number"
+                     v-model.number="form.capacidad"
+                     :label="form.tipo ? `Capacidad (${rangoCapacidadTexto()}) *` : 'Capacidad (puestos) *'"
+                     :min="limiteMinimo()"
+                     :max="limiteMaximo()"
+                    :hint="hintCapacidad()"
+                    lazy-rules
+                   :rules="[
+                   val => (val !== null && val !== undefined && val !== '') || 'La capacidad es obligatoria',
+                   validarCapacidadRegla
+                 ]"
                 />
               </div>
 
@@ -170,7 +170,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, nextTick } from 'vue'
+import { ref, reactive, nextTick } from 'vue'
 import { useVehiculoStore, REGLAS_CAPACIDAD, validarCapacidadTipo } from '../stores/vehiculoStore'
 
 const store = useVehiculoStore()
@@ -191,26 +191,28 @@ const exito = ref(false)
 const errorMsg = ref('')
 const nuevoId = ref(null)
 
-const reglaActual = computed(() => {
+function reglaActual() {
   return REGLAS_CAPACIDAD[form.tipo] || null
-})
+}
 
-const limiteMinimo = computed(() => {
-  return reglaActual.value ? reglaActual.value.min : 1
-})
+function limiteMinimo() {
+  const regla = reglaActual()
+  return regla ? regla.min : 1
+}
 
-const limiteMaximo = computed(() => {
-  return reglaActual.value ? reglaActual.value.max : 50
-})
+function limiteMaximo() {
+  const regla = reglaActual()
+  return regla ? regla.max : 50
+}
 
-const rangoCapacidadTexto = computed(() => {
+function rangoCapacidadTexto() {
   if (form.tipo === 'Microbús') return '10 - 20 puestos'
   if (form.tipo === 'Buseta') return '20 - 35 puestos'
   if (form.tipo === 'Bus') return '35 - 50 puestos (máx. 50)'
   return '1 a 50 puestos'
-})
+}
 
-const hintCapacidad = computed(() => {
+function hintCapacidad() {
   if (form.tipo === 'Microbús') return 'Microbús: min 10 puestos, max 20 puestos'
   if (form.tipo === 'Buseta') return 'Buseta: min 20 puestos, max 35 puestos'
   if (form.tipo === 'Bus') {
@@ -221,7 +223,8 @@ const hintCapacidad = computed(() => {
     return 'Bus: 35 a 50 puestos (más de 35 incluye baño al final a la derecha)'
   }
   return 'Seleccione primero el tipo de vehículo'
-})
+}
+
 
 function validarCapacidadRegla(val) {
   if (!val) return 'La capacidad es obligatoria'
