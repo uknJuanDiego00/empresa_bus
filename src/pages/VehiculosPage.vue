@@ -1,11 +1,10 @@
 <template>
   <q-page class="q-pa-lg">
     <div class="q-mx-auto" style="max-width: 1100px;">
-      <div class="row items-center justify-between q-mb-lg">
-        <div>
-          <div class="text-h5 text-weight-bold" style="color: var(--vb-text-primary);">Vehículos y Flota</div>
-          <div class="text-caption" style="color: var(--vb-text-secondary);">{{ store.vehiculos.length }} vehículos registrados en flota</div>
-        </div>
+      <PageHeader
+        title="Vehículos y Flota"
+        :subtitle="`${store.vehiculos.length} vehículos registrados en flota`"
+      >
         <q-btn
           color="primary"
           icon="add"
@@ -14,24 +13,16 @@
           no-caps
           unelevated
         />
-      </div>
+      </PageHeader>
+
+        <!-- en esta parte se integran los cambios con la compontizacion de funciones -->
 
       <!-- Barra de búsqueda rápida de flota -->
-      <div class="row q-mb-md">
-        <div class="col-12 col-md-5">
-          <q-input
-            v-model="filtroTexto"
-            outlined
-            dense
-            placeholder="Buscar por empresa, placa, tipo o conductor..."
-            clearable
-          >
-            <template v-slot:prepend>
-              <q-icon name="search" color="primary" />
-            </template>
-          </q-input>
-        </div>
-      </div>
+      <BuscadorFiltro
+        v-model="filtroTexto"
+        placeholder="Buscar por empresa, placa, tipo o conductor..."
+        :wrap-card="false"
+      />
 
       <q-card flat bordered class="vb-card shadow-1 rounded-borders">
         <q-table
@@ -94,6 +85,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useVehiculoStore } from '../stores/vehiculoStore'
+import PageHeader from '../components/PageHeader.vue'
+import BuscadorFiltro from '../components/BuscadorFiltro.vue'
 
 const store = useVehiculoStore()
 const filtroTexto = ref('')

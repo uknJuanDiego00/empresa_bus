@@ -2,34 +2,21 @@
   <q-page class="q-pa-lg">
     <div class="q-mx-auto" style="max-width: 1200px;">
       <!-- Cabecera del módulo -->
-      <div class="row items-center justify-between q-mb-lg">
-        <div>
-          <div class="row items-center q-gutter-x-sm">
-            <q-badge color="purple-9" text-color="white" class="text-weight-bold text-caption q-pa-xs">
-              <q-icon name="security" size="14px" class="q-mr-xs" />
-              EXCLUSIVO SUPERADMIN
-            </q-badge>
-            <div class="text-h5 text-weight-bold" style="color: var(--vb-text-primary);">
-              Gestión Global de Usuarios
-            </div>
-          </div>
-          <div class="text-caption" style="color: var(--vb-text-secondary);">
-            Control administrativo global: altas, bajas, roles y restablecimiento de credenciales
-          </div>
-        </div>
-
-        <div class="row q-gutter-sm">
-          <q-btn
-            color="primary"
-            icon="person_add"
-            label="Nuevo Usuario"
-            @click="abrirModalCrear"
-            no-caps
-            unelevated
-            class="text-weight-bold"
-          />
-        </div>
-      </div>
+      <PageHeader
+        title="Gestión Global de Usuarios"
+        subtitle="Control administrativo global: altas, bajas, roles y restablecimiento de credenciales"
+        :badge="{ text: 'EXCLUSIVO SUPERADMIN', color: 'purple-9', textColor: 'white', icon: 'security' }"
+      >
+        <q-btn
+          color="primary"
+          icon="person_add"
+          label="Nuevo Usuario"
+          @click="abrirModalCrear"
+          no-caps
+          unelevated
+          class="text-weight-bold"
+        />
+      </PageHeader>
 
       <!-- Métricas del sistema de usuarios -->
       <div class="row q-col-gutter-md q-mb-lg">
@@ -62,6 +49,10 @@
           </q-card>
         </div>
       </div>
+
+
+        <!-- en esta parte se integran los cambios con la compontizacion de funciones -->
+
 
       <!-- Barra de Filtros y Búsqueda -->
       <q-card flat bordered class="vb-card q-mb-md">
@@ -550,6 +541,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useAuthStore, ROLES } from '../stores/authStore'
+import PageHeader from '../components/PageHeader.vue'
 
 const $q = useQuasar()
 const router = useRouter()

@@ -1,11 +1,10 @@
 <template>
   <q-page class="q-pa-lg">
     <div class="q-mx-auto" style="max-width: 1100px;">
-      <div class="row items-center justify-between q-mb-lg">
-        <div>
-          <div class="text-h5 text-weight-bold" style="color: var(--vb-text-primary);">Clientes</div>
-          <div class="text-caption" style="color: var(--vb-text-secondary);">{{ store.clientes.length }} clientes registrados</div>
-        </div>
+      <PageHeader
+        title="Clientes"
+        :subtitle="`${store.clientes.length} clientes registrados`"
+      >
         <q-btn
           color="primary"
           icon="person_add"
@@ -14,25 +13,18 @@
           no-caps
           unelevated
         />
-      </div>
+      </PageHeader>
+
+
+      <!-- en esta parte se integran los cambios con la compontizacion de funciones -->
+
 
       <!-- Buscador -->
-      <q-card flat bordered class="vb-card q-mb-md shadow-1 rounded-borders">
-        <q-card-section class="q-py-sm">
-          <q-input
-            outlined
-            dense
-            v-model="filtro"
-            placeholder="Buscar por documento o nombre..."
-            clearable
-            style="max-width: 400px;"
-          >
-            <template v-slot:prepend>
-              <q-icon name="search" color="primary" />
-            </template>
-          </q-input>
-        </q-card-section>
-      </q-card>
+      <BuscadorFiltro
+        v-model="filtro"
+        placeholder="Buscar por documento o nombre..."
+        max-width="400px"
+      />
 
       <q-card flat bordered class="vb-card shadow-1 rounded-borders">
         <q-table
@@ -65,6 +57,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useClienteStore } from '../stores/clienteStore'
+import PageHeader from '../components/PageHeader.vue'
+import BuscadorFiltro from '../components/BuscadorFiltro.vue'
 
 const store = useClienteStore()
 const filtro = ref('')

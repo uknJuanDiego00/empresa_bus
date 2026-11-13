@@ -1,32 +1,27 @@
 <template>
   <q-page class="q-pa-lg">
     <div class="q-mx-auto" style="max-width: 100%;">
-      <div class="row items-center justify-between q-mb-lg">
-        <div>
-          <div class="text-h5 text-weight-bold" style="color: var(--vb-text-primary);">Ventas & Reservas</div>
-          <div class="text-caption" style="color: var(--vb-text-secondary);">
-            {{ obtenerVentas().length }} registros en total
-          </div>
-        </div>
-        <div class="row q-gutter-sm">
-          <q-btn
-            color="primary"
-            icon="add_shopping_cart"
-            label="Nueva Venta"
-            to="/ventas/nueva"
-            no-caps
-            unelevated
-          />
-          <q-btn
-            outline
-            color="primary"
-            icon="alt_route"
-            label="Venta por Trayectoria"
-            to="/ventas/manual"
-            no-caps
-          />
-        </div>
-      </div>
+      <PageHeader
+        title="Ventas &amp; Reservas"
+        :subtitle="`${obtenerVentas().length} registros en total`"
+      >
+        <q-btn
+          color="primary"
+          icon="add_shopping_cart"
+          label="Nueva Venta"
+          to="/ventas/nueva"
+          no-caps
+          unelevated
+        />
+        <q-btn
+          outline
+          color="primary"
+          icon="alt_route"
+          label="Venta por Trayectoria"
+          to="/ventas/manual"
+          no-caps
+        />
+      </PageHeader>
 
       <!-- Filtros por estado -->
       <div class="row q-gutter-sm items-center q-mb-md">
@@ -470,6 +465,7 @@ import { useClienteStore } from '../stores/clienteStore'
 import { useViajeStore } from '../stores/viajeStore'
 import { useVehiculoStore } from '../stores/vehiculoStore'
 import { useQuasar } from 'quasar'
+import PageHeader from '../components/PageHeader.vue'
 
 const $q = useQuasar()
 const ventaStore = useVentaStore()
