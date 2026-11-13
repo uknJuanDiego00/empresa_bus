@@ -36,10 +36,18 @@ defineProps({
     type: String,
     default: ''
   },
-  badge: {
-    type: Object,
+  fondo: {
+    type: string,
+    default: blue
+  }
+,
+  colorDetexto:{
+    type: string,
+    default: white
+  },
+  icon:{
+    type: string,
     default: null
-    // { text, color, textColor, icon }
   }
 })
 </script>
