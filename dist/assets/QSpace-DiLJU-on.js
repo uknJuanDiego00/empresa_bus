@@ -1,1 +1,0 @@
-import{Y as e,yt as t}from"./pinia-CvT-itl1.js";var n=e({name:`QSpace`,setup(){let e=t(`div`,{class:`q-space`});return()=>e}});export{n as t};
