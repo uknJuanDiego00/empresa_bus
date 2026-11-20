@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia'
-import { ventaApi } from '../services/api'
 import { useVehiculoStore } from './vehiculoStore'
 import { useViajeStore } from './viajeStore'
 
@@ -10,12 +9,73 @@ function normalizeEstado(estado) {
   return estado
 }
 
+const VENTAS_INICIALES = [
+  {
+    id: 'TKT-001',
+    ventaId: 'VTA-001',
+    viajeId: 'via-001',
+    clienteId: 'cli-001',
+    customerName: 'Carlos Alberto Pérez Gómez',
+    customerDoc: '1000000001',
+    puestoId: 5,
+    piso: 1,
+    precio: 85000,
+    origen: 'Bogotá D.C.',
+    destino: 'Medellín',
+    descripcion: 'Equipaje estándar 1 maleta',
+    fechaVenta: '2026-11-19 09:30',
+    estado: 'CONFIRMADO',
+    metodoPago: 'Efectivo',
+    estadoDevolucion: 'No solicitada',
+    notasDevolucion: ''
+  },
+  {
+    id: 'TKT-002',
+    ventaId: 'VTA-002',
+    viajeId: 'via-001',
+    clienteId: 'cli-002',
+    customerName: 'María Fernanda Gómez Ruiz',
+    customerDoc: '1000000002',
+    puestoId: 6,
+    piso: 1,
+    precio: 85000,
+    origen: 'Bogotá D.C.',
+    destino: 'Medellín',
+    descripcion: '',
+    fechaVenta: '2026-11-19 10:15',
+    estado: 'CONFIRMADO',
+    metodoPago: 'Tarjeta Débito',
+    estadoDevolucion: 'No solicitada',
+    notasDevolucion: ''
+  },
+  {
+    id: 'TKT-003',
+    ventaId: 'VTA-003',
+    viajeId: 'via-002',
+    clienteId: 'cli-003',
+    customerName: 'Juan David Rodríguez Toro',
+    customerDoc: '1000000003',
+    puestoId: 12,
+    piso: 1,
+    precio: 70000,
+    origen: 'Medellín',
+    destino: 'Cali',
+    descripcion: 'Asiento pasillo',
+    fechaVenta: '2026-11-19 11:45',
+    estado: 'CONFIRMADO',
+    metodoPago: 'Transferencia',
+    estadoDevolucion: 'No solicitada',
+    notasDevolucion: ''
+  }
+]
+
 export const useVentaStore = defineStore('venta', {
   state: () => ({
     ventas: [],
     cargando: false,
     error: null
   }),
+
   getters: {
     totalIngresos: (state) => {
       let suma = 0
@@ -26,6 +86,7 @@ export const useVentaStore = defineStore('venta', {
       }
       return suma
     },
+
     puestosOcupadosPorViaje: (state) => (viajeId, tramoOrigen, tramoDestino) => {
       const viajeStore = useViajeStore()
       const viaje = viajeStore.obtenerViaje(viajeId)
@@ -78,11 +139,14 @@ export const useVentaStore = defineStore('venta', {
       }
       return nums
     },
+
     puestosPendientesPorViaje: () => () => [],
+
     puestoOcupado: (state) => (viajeId, puestoId, tramoOrigen, tramoDestino) => {
       const ocupados = state.puestosOcupadosPorViaje(viajeId, tramoOrigen, tramoDestino)
       return ocupados.includes(Number(puestoId))
     },
+
     cuposDisponiblesViaje: (state) => (viajeId) => {
       const viajeStore = useViajeStore()
       const vehiculoStore = useVehiculoStore()
@@ -97,51 +161,21 @@ export const useVentaStore = defineStore('venta', {
       return Math.max(0, Number(vehiculo.capacidad || 0) - ocupados)
     }
   },
+
   actions: {
     async cargarVentas() {
       this.cargando = true
       this.error = null
       try {
-        const res = await ventaApi.obtenerTodas()
-        if (res && res.data) {
-          const nuevas = []
-          for (const v of res.data) {
-            const tripObj = v.trip && typeof v.trip === 'object' ? v.trip : null
-            const custObj = v.customer && typeof v.customer === 'object' ? v.customer : null
-            const vId = v.viajeId || (tripObj ? (tripObj._id || tripObj.id) : v.trip) || ''
-            const cId = v.clienteId || (custObj ? (custObj._id || custObj.id) : v.customer) || ''
-
-            nuevas.push({
-              id: v.ticketCode || v.id || v._id,
-              _id: v._id,
-              ventaId: v.ventaId || v.saleId || v.ticketCode || v.id || v._id,
-              viajeId: vId,
-              trip: tripObj,
-              clienteId: cId,
-              customer: custObj,
-              customerName: v.customerName || custObj?.nombre || '',
-              customerDoc: v.customerDoc || custObj?.documento || '',
-              puestoId: Number(v.puestoId !== undefined ? v.puestoId : v.seatNumber),
-              piso: Number(v.piso || v.floor || 1),
-              precio: Number(v.precio !== undefined ? v.precio : v.totalAmount),
-              descripcion: v.descripcion || v.notes || '',
-              fechaVenta: v.fechaVenta || v.saleDate,
-              estado: normalizeEstado(v.estado || v.status),
-              metodoPago: v.metodoPago || v.paymentMethod || 'Efectivo',
-              estadoDevolucion: v.estadoDevolucion || v.refundStatus || 'No solicitada',
-              notasDevolucion: v.notasDevolucion || v.refundNotes || ''
-            })
-          }
-          this.ventas = nuevas
+        if (this.ventas.length === 0) {
+          this.ventas = [...VENTAS_INICIALES]
         }
-      } catch (err) {
-        console.warn('No se pudo conectar a la API de ventas:', err.message)
       } finally {
         this.cargando = false
       }
     },
 
-    validarReglasTrayectoria({ vehiculoId, viajeId, origen, destino }) {
+    validarRegrasTrayectoria({ vehiculoId, viajeId, origen, destino }) {
       const viajeStore = useViajeStore()
       const vehiculoStore = useVehiculoStore()
 
@@ -198,7 +232,7 @@ export const useVentaStore = defineStore('venta', {
     },
 
     async crearVenta(datos) {
-      this.validarReglasTrayectoria({
+      this.validarRegrasTrayectoria({
         vehiculoId: datos.vehiculoId,
         viajeId: datos.viajeId,
         origen: datos.origen,
@@ -225,75 +259,29 @@ export const useVentaStore = defineStore('venta', {
       const now = new Date()
       const fechaStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
 
-      const payload = {
-        tripId: String(datos.viajeId),
+      const nueva = {
+        id: `TKT-${num}`,
+        ventaId: `VTA-${num}`,
         viajeId: String(datos.viajeId),
-        customerId: datos.clienteId ? String(datos.clienteId) : undefined,
         clienteId: datos.clienteId ? String(datos.clienteId) : undefined,
         customerName: datos.customerName.trim(),
         customerDoc: datos.customerDoc.trim(),
-        seatNumber: Number(datos.puestoId),
         puestoId: Number(datos.puestoId),
         piso: Number(datos.piso || 1),
-        floor: Number(datos.piso || 1),
-        totalAmount: Number(datos.precio),
         precio: Number(datos.precio),
-        origin: datos.origen || '',
-        destination: datos.destino || '',
-        notes: datos.descripcion || '',
+        origen: datos.origen || '',
+        destino: datos.destino || '',
         descripcion: datos.descripcion || '',
-        saleDate: fechaStr,
         fechaVenta: fechaStr,
-        status: 'Pagado',
-        estado: 'Pagado',
-        paymentMethod: datos.metodoPago || 'Efectivo',
-        metodoPago: datos.metodoPago || 'Efectivo'
+        estado: 'CONFIRMADO',
+        metodoPago: datos.metodoPago || 'Efectivo',
+        estadoDevolucion: 'No solicitada',
+        notasDevolucion: ''
       }
 
-      try {
-        const res = await ventaApi.crear(payload)
-        const vGuardada = res?.data || res
-        const primera = Array.isArray(vGuardada) ? vGuardada[0] : vGuardada
-        const nueva = {
-          id: primera?.ticketCode || primera?.id || `TKT-${num}`,
-          _id: primera?._id,
-          ventaId: primera?.saleId || primera?.ticketCode || primera?.id || `VTA-${num}`,
-          viajeId: payload.viajeId,
-          clienteId: payload.clienteId || (primera?.customer ? (primera.customer._id || primera.customer) : ''),
-          customerName: primera?.customerName || payload.customerName,
-          customerDoc: primera?.customerDoc || payload.customerDoc,
-          puestoId: payload.puestoId,
-          piso: payload.piso,
-          precio: payload.precio,
-          origen: payload.origin || datos.origen || '',
-          destino: payload.destination || datos.destino || '',
-          origin: payload.origin || datos.origen || '',
-          destination: payload.destination || datos.destino || '',
-          descripcion: payload.descripcion,
-          fechaVenta: payload.fechaVenta,
-          estado: 'CONFIRMADO',
-          metodoPago: payload.metodoPago,
-          estadoDevolucion: 'No solicitada',
-          notasDevolucion: ''
-        }
-        this.ventas.unshift(nueva)
-        return nueva
-      } catch (err) {
-        console.error('Error al guardar venta en API, guardando local:', err)
-        const nuevaLocal = {
-          id: `TKT-${num}`,
-          _id: `local-${Date.now()}`,
-          ventaId: `VTA-${num}`,
-          ...payload,
-          estado: 'CONFIRMADO',
-          estadoDevolucion: 'No solicitada',
-          notasDevolucion: ''
-        }
-        this.ventas.unshift(nuevaLocal)
-        return nuevaLocal
-      } finally {
-        this.cargando = false
-      }
+      this.ventas.unshift(nueva)
+      this.cargando = false
+      return nueva
     },
 
     async crearVentaMultiple(datos) {
@@ -301,7 +289,7 @@ export const useVentaStore = defineStore('venta', {
       const origenItem = datos.origen || items[0]?.origen
       const destinoItem = datos.destino || items[0]?.destino
 
-      this.validarReglasTrayectoria({
+      this.validarRegrasTrayectoria({
         vehiculoId: datos.vehiculoId,
         viajeId: datos.viajeId,
         origen: origenItem,
@@ -327,7 +315,6 @@ export const useVentaStore = defineStore('venta', {
         throw new Error(`Solo quedan ${disp} puesto(s) disponible(s) para este viaje.`)
       }
 
-      // Validar puestos duplicados en la misma petición
       const puestosVistos = new Set()
       for (const item of items) {
         const numPuesto = Number(item.puestoId !== undefined ? item.puestoId : item.seatNumber)
@@ -354,166 +341,64 @@ export const useVentaStore = defineStore('venta', {
       const fechaStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
       const tiquetesCreados = []
 
-      try {
-        for (const item of items) {
-          const numPuesto = Number(item.puestoId !== undefined ? item.puestoId : item.seatNumber)
-          const precioItem = Number(item.precio !== undefined ? item.precio : (item.totalAmount !== undefined ? item.totalAmount : (datos.precio || 0)))
-          const cNom = (item.customerName || item.nombre || '').trim()
-          const cDoc = (item.customerDoc || item.documento || '').trim()
-          const cId = item.clienteId || item.customerId || undefined
-          const pisoNum = Number(item.piso || item.floor || 1)
+      for (const item of items) {
+        const numPuesto = Number(item.puestoId !== undefined ? item.puestoId : item.seatNumber)
+        const precioItem = Number(item.precio !== undefined ? item.precio : (item.totalAmount !== undefined ? item.totalAmount : (datos.precio || 0)))
+        const cNom = (item.customerName || item.nombre || '').trim()
+        const cDoc = (item.customerDoc || item.documento || '').trim()
+        const cId = item.clienteId || item.customerId || undefined
+        const pisoNum = Number(item.piso || item.floor || 1)
+        const num = String(this.ventas.length + 1).padStart(3, '0')
 
-          const payload = {
-            tripId: String(datos.viajeId),
-            viajeId: String(datos.viajeId),
-            seatNumber: numPuesto,
-            puestoId: numPuesto,
-            piso: pisoNum,
-            floor: pisoNum,
-            customerId: cId,
-            clienteId: cId,
-            customerName: cNom,
-            customerDoc: cDoc,
-            totalAmount: precioItem,
-            precio: precioItem,
-            origin: item.origen || datos.origen || '',
-            destination: item.destino || datos.destino || '',
-            notes: item.notes || item.descripcion || datos.descripcion || '',
-            descripcion: item.descripcion || item.notes || datos.descripcion || '',
-            saleDate: fechaStr,
-            fechaVenta: fechaStr,
-            status: 'Pagado',
-            estado: 'Pagado',
-            paymentMethod: datos.paymentMethod || datos.metodoPago || 'Efectivo',
-            metodoPago: datos.metodoPago || datos.paymentMethod || 'Efectivo'
-          }
-
-          try {
-            const res = await ventaApi.crear(payload)
-            const resObj = res?.data || res
-            const primera = Array.isArray(resObj) ? resObj[0] : resObj
-            const tkt = {
-              id: primera?.ticketCode || primera?.id || primera?._id || `TKT-${String(this.ventas.length + 1).padStart(3, '0')}`,
-              _id: primera?._id,
-              ventaId: primera?.saleId || primera?.ticketCode || primera?.id || `VTA-${String(this.ventas.length + 1).padStart(3, '0')}`,
-              viajeId: String(datos.viajeId),
-              clienteId: cId || (primera?.customer ? (primera.customer._id || primera.customer) : ''),
-              customerName: cNom,
-              customerDoc: cDoc,
-              puestoId: numPuesto,
-              piso: pisoNum,
-              precio: precioItem,
-              origen: payload.origin,
-              destino: payload.destination,
-              origin: payload.origin,
-              destination: payload.destination,
-              descripcion: payload.descripcion,
-              fechaVenta: fechaStr,
-              estado: 'CONFIRMADO',
-              metodoPago: payload.metodoPago,
-              estadoDevolucion: 'No solicitada',
-              notasDevolucion: ''
-            }
-            this.ventas.unshift(tkt)
-            tiquetesCreados.push(tkt)
-          } catch (itemErr) {
-            console.error('Error al guardar tiquete en backend, guardando local:', itemErr)
-            const num = String(this.ventas.length + 1).padStart(3, '0')
-            const fallbackTkt = {
-              id: `TKT-${num}`,
-              _id: `local-${Date.now()}-${numPuesto}`,
-              ventaId: `VTA-${num}`,
-              viajeId: String(datos.viajeId),
-              clienteId: cId || '',
-              customerName: cNom,
-              customerDoc: cDoc,
-              puestoId: numPuesto,
-              piso: pisoNum,
-              precio: precioItem,
-              origen: payload.origin,
-              destino: payload.destination,
-              origin: payload.origin,
-              destination: payload.destination,
-              descripcion: payload.descripcion,
-              fechaVenta: fechaStr,
-              estado: 'CONFIRMADO',
-              metodoPago: payload.metodoPago,
-              estadoDevolucion: 'No solicitada',
-              notasDevolucion: ''
-            }
-            this.ventas.unshift(fallbackTkt)
-            tiquetesCreados.push(fallbackTkt)
-          }
+        const tkt = {
+          id: `TKT-${num}`,
+          ventaId: `VTA-${num}`,
+          viajeId: String(datos.viajeId),
+          clienteId: cId || '',
+          customerName: cNom,
+          customerDoc: cDoc,
+          puestoId: numPuesto,
+          piso: pisoNum,
+          precio: precioItem,
+          origen: item.origen || datos.origen || '',
+          destino: item.destino || datos.destino || '',
+          descripcion: item.descripcion || item.notes || datos.descripcion || '',
+          fechaVenta: fechaStr,
+          estado: 'CONFIRMADO',
+          metodoPago: datos.metodoPago || datos.paymentMethod || 'Efectivo',
+          estadoDevolucion: 'No solicitada',
+          notasDevolucion: ''
         }
-
-        return {
-          saleId: tiquetesCreados[0]?.ventaId || `VTA-${Date.now()}`,
-          tiquetes: tiquetesCreados,
-          data: tiquetesCreados
-        }
-      } finally {
-        this.cargando = false
+        this.ventas.unshift(tkt)
+        tiquetesCreados.push(tkt)
       }
+
+      this.cargando = false
+      return tiquetesCreados
     },
 
-    async actualizarEstadoVenta(id, nuevoEstado) {
-      const v = this.obtenerVenta(id)
-      if (v) {
-        v.estado = nuevoEstado
-        v.status = nuevoEstado
-      }
-      try {
-        if (nuevoEstado === 'CANCELADO') {
-          await ventaApi.cancelar(id)
-        }
-      } catch (err) {
-        console.warn('Error al actualizar estado en API:', err.message)
-      }
-    },
-
-    async cancelarVentaConDevolucion(id, { motivo, aplicaDevolucion, montoDevuelto, metodoDevolucion }) {
-      const v = this.obtenerVenta(id)
-      if (!v) {
-        throw new Error('Venta no encontrada.')
-      }
-      if (v.estado === 'CANCELADO') {
-        throw new Error('Esta venta ya se encuentra cancelada.')
-      }
-
+    async cancelarVenta(id, datos = {}) {
       this.cargando = true
+      this.error = null
+
       try {
-        const fechaCancel = new Date().toISOString()
-        const monto = aplicaDevolucion ? Number(montoDevuelto !== undefined ? montoDevuelto : (v.precio || 0)) : 0
-        const estadoDev = aplicaDevolucion ? 'Devuelta' : (v.estadoDevolucion === 'Devuelta' ? 'Devuelta' : 'Sin devolución')
-
-        // Actualizar datos de forma reactiva y completa
-        v.estado = 'CANCELADO'
-        v.status = 'CANCELLED'
-        v.motivoCancelacion = motivo || ''
-        v.fechaCancelacion = fechaCancel
-        v.estadoDevolucion = estadoDev
-        v.montoDevuelto = monto
-        v.metodoDevolucion = metodoDevolucion || v.metodoPago || 'Efectivo'
-        v.notasDevolucion = motivo || v.notasDevolucion || ''
-
-        // Persistir en backend API
-        try {
-          await ventaApi.cancelar(id, {
-            motivo: motivo || '',
-            aplicaDevolucion,
-            montoDevuelto: monto,
-            metodoDevolucion: v.metodoDevolucion
-          })
-          if (aplicaDevolucion) {
-            await ventaApi.actualizarDevolucion(id, {
-              estadoDevolucion: 'Devuelta',
-              montoDevuelto: monto,
-              notasDevolucion: motivo || ''
-            })
-          }
-        } catch (apiErr) {
-          console.warn('API backend no respondió, cancelación guardada en almacenamiento local:', apiErr.message)
+        const v = this.obtenerVenta(id)
+        if (!v) {
+          throw new Error('Venta no encontrada.')
         }
+
+        const motivo = datos.motivo || ''
+        const aplicaDevolucion = Boolean(datos.aplicaDevolucion)
+        const monto = Number(datos.montoDevuelto !== undefined ? datos.montoDevuelto : v.precio)
+
+        v.estado = 'CANCELADO'
+        v.motivoCancelacion = motivo
+        v.fechaCancelacion = new Date().toISOString()
+        v.aplicaDevolucion = aplicaDevolucion
+        v.montoDevuelto = aplicaDevolucion ? monto : 0
+        v.metodoDevolucion = datos.metodoDevolucion || 'Efectivo'
+        v.estadoDevolucion = aplicaDevolucion ? 'Devuelta' : 'No aplica'
+        v.notasDevolucion = motivo
 
         return v
       } finally {
@@ -523,23 +408,14 @@ export const useVentaStore = defineStore('venta', {
 
     async actualizarDevolucion(id, estadoDevolucion, notas) {
       const v = this.obtenerVenta(id)
-      try {
-        const payload = { estadoDevolucion, notasDevolucion: notas || '' }
-        await ventaApi.actualizarDevolucion(id, payload)
-        if (v) {
-          v.estadoDevolucion = estadoDevolucion
-          if (notas) v.notasDevolucion = notas
-          if (estadoDevolucion === 'Devuelta') {
-            v.estado = 'Cancelado'
-          }
-        }
-      } catch (err) {
-        console.warn('Error al actualizar devolución en API:', err.message)
-        if (v) {
-          v.estadoDevolucion = estadoDevolucion
-          if (notas) v.notasDevolucion = notas
+      if (v) {
+        v.estadoDevolucion = estadoDevolucion
+        if (notas) v.notasDevolucion = notas
+        if (estadoDevolucion === 'Devuelta') {
+          v.estado = 'CANCELADO'
         }
       }
+      return v
     },
 
     obtenerVenta(id) {
@@ -552,5 +428,6 @@ export const useVentaStore = defineStore('venta', {
       return null
     }
   },
+
   persist: true
 })

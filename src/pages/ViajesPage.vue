@@ -311,124 +311,13 @@
         </div>
       </div>
 
-      <!-- VISTA EN TABLA -->
+      <!-- VISTA EN TABLA COMPONENTIZADA -->
       <q-card v-else flat bordered class="rounded-borders-md vb-card shadow-sm overflow-hidden">
-        <q-table
-          flat
-          :rows="obtenerViajesFiltrados()"
-          :columns="columns"
-          row-key="id"
-          :pagination="{ rowsPerPage: 10 }"
-          no-data-label="No hay viajes registrados"
-        >
-          <template v-slot:body-cell-codigo="props">
-            <q-td :props="props">
-              <q-badge color="blue-1" text-color="primary" class="text-weight-bold font-mono">
-                {{ props.row.codigo }}
-              </q-badge>
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-ruta="props">
-            <q-td :props="props">
-              <div class="row items-center q-gutter-x-xs no-wrap">
-                <span class="text-weight-bold text-grey-9">{{ props.row.origen }}</span>
-                <q-icon name="arrow_forward" size="14px" color="primary" />
-                <span class="text-weight-bold text-grey-9">{{ props.row.destino }}</span>
-              </div>
-              <div v-if="props.row.paradasIntermedias && props.row.paradasIntermedias.length > 0" class="text-caption text-grey-6">
-                {{ props.row.paradasIntermedias.length }} parada(s) intermedia(s)
-              </div>
-              <div class="text-caption text-grey-6 row items-center q-gutter-x-xs">
-                <q-icon name="schedule" size="12px" color="primary" />
-                <span>{{ getRutaInfo(props.row).duracionTexto }}</span>
-                <span>•</span>
-                <span>{{ getRutaInfo(props.row).distanciaTexto }}</span>
-              </div>
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-horario="props">
-            <q-td :props="props">
-              <div class="text-caption">
-                <div class="text-weight-medium">{{ props.row.fecha }}</div>
-                <div class="text-primary text-weight-bold">{{ props.row.hora }}</div>
-              </div>
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-vehiculo="props">
-            <q-td :props="props">
-              <div>
-                <span class="text-weight-bold text-primary">{{ getVehiculo(props.row.vehiculoId)?.placa || '—' }}</span>
-                <span class="text-caption text-grey-6 q-ml-xs">({{ getVehiculo(props.row.vehiculoId)?.tipo }})</span>
-                <div class="text-caption text-grey-7">{{ getVehiculo(props.row.vehiculoId)?.conductor }}</div>
-              </div>
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-disponibilidad="props">
-            <q-td :props="props" style="min-width: 160px;">
-              <div class="row items-center justify-between text-caption q-mb-xs">
-                <q-badge color="positive" dense class="text-weight-bold">
-                  {{ getDisponibles(props.row) }} disp.
-                </q-badge>
-                <q-badge color="negative" dense>
-                  {{ getOcupados(props.row) }} ocup.
-                </q-badge>
-              </div>
-              <q-linear-progress
-                :value="getPorcentajeOcupacion(props.row)"
-                rounded
-                size="6px"
-                :color="getPorcentajeOcupacion(props.row) > 0.85 ? 'negative' : 'positive'"
-                track-color="grey-3"
-              />
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-precio="props">
-            <q-td :props="props">
-              <span class="text-weight-bolder text-primary text-subtitle2">
-                ${{ props.row.precio.toLocaleString('es-CO') }}
-              </span>
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-estado="props">
-            <q-td :props="props">
-              <q-badge :color="colorEstado(props.row.estado)" class="q-py-xs q-px-sm">
-                {{ props.row.estado }}
-              </q-badge>
-            </q-td>
-          </template>
-
-          <template v-slot:body-cell-acciones="props">
-            <q-td :props="props">
-              <div class="row q-gutter-x-xs justify-end">
-                <q-btn
-                  flat
-                  round
-                  dense
-                  color="grey-7"
-                  icon="visibility"
-                  @click="abrirVistaMapa(props.row)"
-                  title="Ver mapa de asientos"
-                />
-                <q-btn
-                  color="primary"
-                  size="sm"
-                  icon="add_shopping_cart"
-                  label="Nueva Venta"
-                  @click="iniciarNuevaVenta(props.row)"
-                  no-caps
-                  unelevated
-                  class="text-weight-bold q-px-sm"
-                />
-              </div>
-            </q-td>
-          </template>
-        </q-table>
+        <ViajesTable
+          :viajes="obtenerViajesFiltrados()"
+          :on-ver-mapa="abrirVistaMapa"
+          :on-nueva-venta="iniciarNuevaVenta"
+        />
       </q-card>
 
       <!-- =====================================================
@@ -967,6 +856,7 @@ import { useVehiculoStore } from '../stores/vehiculoStore'
 import { useVentaStore } from '../stores/ventaStore'
 import { useAuthStore } from '../stores/authStore'
 import SeatMap from '../components/SeatMap.vue'
+import ViajesTable from '../components/ViajesTable.vue'
 import { estimarRutaViaje } from '../utils/distanceCalculator'
 
 const $q = useQuasar()

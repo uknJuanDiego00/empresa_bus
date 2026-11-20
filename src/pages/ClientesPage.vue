@@ -4,20 +4,10 @@
       <PageHeader
         title="Clientes"
         :subtitle="`${store.clientes.length} clientes registrados`"
-      >
-        <q-btn
-          color="primary"
-          icon="person_add"
-          label="Registrar Cliente"
-          to="/clientes/registrar"
-          no-caps
-          unelevated
-        />
-      </PageHeader>
-
-
-      <!-- en esta parte se integran los cambios con la compontizacion de funciones -->
-
+        boton-texto="Registrar Cliente"
+        boton-icono="person_add"
+        boton-ruta="/clientes/registrar"
+      />
 
       <!-- Buscador -->
       <BuscadorFiltro

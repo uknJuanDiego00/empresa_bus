@@ -4,18 +4,10 @@
       <PageHeader
         title="Vehículos y Flota"
         :subtitle="`${store.vehiculos.length} vehículos registrados en flota`"
-      >
-        <q-btn
-          color="primary"
-          icon="add"
-          label="Registrar Vehículo"
-          to="/vehiculos/registrar"
-          no-caps
-          unelevated
-        />
-      </PageHeader>
-
-        <!-- en esta parte se integran los cambios con la compontizacion de funciones -->
+        boton-texto="Registrar Vehículo"
+        boton-icono="add"
+        boton-ruta="/vehiculos/registrar"
+      />
 
       <!-- Barra de búsqueda rápida de flota -->
       <BuscadorFiltro

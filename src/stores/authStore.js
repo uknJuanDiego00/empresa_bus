@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { hashPassword, verifyPassword, validarEmail } from '../utils/security'
-import { usuarioApi } from '../services/api'
 
 // Semilla de usuarios preconfigurados con contraseñas seguras hasheadas
 // SUPERADMIN: superadmin@viabus.com / superadmin / SuperAdmin2026*
@@ -144,39 +143,7 @@ export const useAuthStore = defineStore('auth', {
           throw new Error('El formato del correo electrónico no es válido.')
         }
 
-        // 2. Intentar autenticar contra el backend si tiene endpoint habilitado
-        let backendAutenticado = null
-        try {
-          const { default: api } = await import('../services/api.js')
-          const res = await api.post('/auth/login', {
-            correo: correoLimpio,
-            username: userLimpio,
-            password: passLimpia
-          })
-          if (res && res.token) {
-            backendAutenticado = res
-          }
-        } catch (_) {
-          // El backend no cuenta con módulo de auth habilitado; validamos localmente con hash seguro
-        }
-
-        if (backendAutenticado) {
-          const u = backendAutenticado.user || backendAutenticado.usuario
-          this.usuarioActual = {
-            id: u.id || u._id,
-            nombre: u.nombre || userLimpio,
-            username: u.username || userLimpio,
-            correo: u.correo || correoLimpio,
-            rol: u.rol || ROLES.OFICINA,
-            activo: u.activo !== false
-          }
-          this.token = backendAutenticado.token
-          localStorage.setItem('token', this.token)
-          localStorage.setItem('viabus_user', JSON.stringify(this.usuarioActual))
-          return this.usuarioActual
-        }
-
-        // 3. Validación de las 3 credenciales contra la base de usuarios registrada
+        // Validación de credenciales locales con hash seguro criptográfico
         const usuarioEncontrado = this.usuarios.find(u =>
           u.correo.toLowerCase() === correoLimpio &&
           u.username.toLowerCase() === userLimpio
@@ -295,14 +262,7 @@ export const useAuthStore = defineStore('auth', {
     // FUNCIONES EXCLUSIVAS DEL SUPERADMIN
     // =========================================================================
 
-    /**
-     * Crear un nuevo usuario del sistema (solo SUPERADMIN)
-     */
-    async crearUsuario(datos) {
-      if (!this.esSuperAdmin()) {
-        throw new Error('Acceso denegado: solo el SUPERADMIN puede registrar usuarios.')
-      }
-
+    async agregarUsuarioInterno(datos) {
       const rawUsername = String(datos.username || '')
       if (/\s/.test(rawUsername)) {
         throw new Error('El nombre de usuario no permite espacios en blanco ni entre el texto.')
@@ -326,15 +286,15 @@ export const useAuthStore = defineStore('auth', {
         throw new Error('El correo electrónico no es válido.')
       }
 
-      if (this.usuarios.some(u => u.correo.toLowerCase() === correo)) {
+      if (this.usuarios.some(u => u.correo && u.correo.toLowerCase() === correo)) {
         throw new Error(`El correo "${correo}" ya está registrado en el sistema.`)
       }
 
-      if (this.usuarios.some(u => u.username.toLowerCase() === username)) {
+      if (this.usuarios.some(u => u.username && u.username.toLowerCase() === username)) {
         throw new Error(`El nombre de usuario "${username}" ya está en uso.`)
       }
 
-      if (this.usuarios.some(u => u.documento === documento)) {
+      if (this.usuarios.some(u => u.documento && u.documento === documento)) {
         throw new Error(`El número de documento "${documento}" ya está registrado.`)
       }
 
@@ -342,37 +302,37 @@ export const useAuthStore = defineStore('auth', {
 
       const nuevoUsuario = {
         id: `usr-${Date.now()}`,
-        nombre: datos.nombre.trim(),
+        nombre,
         tipoDoc: datos.tipoDoc || 'CC',
         documento,
         correo,
         username,
         passwordHash: passHash,
         rol: datos.rol,
-        telefono: (datos.telefono || '').trim(),
+        telefono,
         activo: true,
         fechaCreacion: new Date().toISOString().split('T')[0]
       }
 
       this.usuarios.unshift(nuevoUsuario)
-
-      // Intentar sincronizar con el backend
-      try {
-        await usuarioApi.crear({
-          nombre: nuevoUsuario.nombre,
-          tipoDoc: nuevoUsuario.tipoDoc,
-          documento: nuevoUsuario.documento,
-          correo: nuevoUsuario.correo,
-          username: nuevoUsuario.username,
-          password,
-          rol: nuevoUsuario.rol,
-          telefono: nuevoUsuario.telefono
-        })
-      } catch (_) {
-        // Backend usuarios no disponible, se mantiene en almacenamiento seguro local
-      }
-
       return nuevoUsuario
+    },
+
+    /**
+     * Registro de usuario público / general
+     */
+    async registrarUsuario(datos) {
+      return await this.agregarUsuarioInterno(datos)
+    },
+
+    /**
+     * Crear un nuevo usuario del sistema (solo SUPERADMIN)
+     */
+    async crearUsuario(datos) {
+      if (!this.esSuperAdmin()) {
+        throw new Error('Acceso denegado: solo el SUPERADMIN puede registrar usuarios.')
+      }
+      return await this.agregarUsuarioInterno(datos)
     },
 
     /**

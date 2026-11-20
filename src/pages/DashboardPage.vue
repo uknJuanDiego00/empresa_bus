@@ -150,86 +150,11 @@
                 <q-btn color="primary" unelevated icon="add" label="Programar Viaje" to="/viajes/crear" no-caps />
               </div>
 
-              <q-table
+              <ViajesTable
                 v-else
-                flat
-                :rows="obtenerViajesProximos()"
-                :columns="columnsViajes"
-                row-key="id"
-                hide-pagination
-                :rows-per-page-options="[5]"
-                class="no-border"
-              >
-                <!-- Celda Ruta con Duración y Distancia -->
-                <template v-slot:body-cell-ruta="props">
-                  <q-td :props="props">
-                    <div class="row items-center q-gutter-x-xs no-wrap">
-                      <span class="text-weight-bold" style="color: var(--vb-text-primary);">{{ props.row.origen }}</span>
-                      <q-icon name="arrow_forward" size="13px" class="q-mx-xs text-grey-5" />
-                      <span class="text-weight-bold" style="color: var(--vb-text-primary);">{{ props.row.destino }}</span>
-                    </div>
-                    <div class="text-caption row items-center q-gutter-x-xs q-mt-xs" style="color: var(--vb-text-secondary);">
-                      <q-icon name="schedule" size="12px" color="primary" />
-                      <span>{{ getRutaInfo(props.row).duracionTexto }}</span>
-                      <span>•</span>
-                      <span>{{ getRutaInfo(props.row).distanciaTexto }}</span>
-                    </div>
-                  </q-td>
-                </template>
-
-                <!-- Celda Horario -->
-                <template v-slot:body-cell-horario="props">
-                  <q-td :props="props">
-                    <div class="text-caption">
-                      <span style="color: var(--vb-text-primary);">{{ props.row.fecha }}</span>
-                      <span class="text-grey-5 q-mx-xs">•</span>
-                      <span class="text-weight-bold text-primary">{{ props.row.hora }}</span>
-                    </div>
-                  </q-td>
-                </template>
-
-                <!-- Celda Disponibilidad -->
-                <template v-slot:body-cell-disponibilidad="props">
-                  <q-td :props="props">
-                    <q-badge color="grey-2" text-color="grey-9" class="text-weight-medium">
-                      <q-icon name="event_seat" size="12px" class="q-mr-xs text-positive" />
-                      {{ getDisponibles(props.row) }} disponibles
-                    </q-badge>
-                  </q-td>
-                </template>
-
-                <!-- Celda Tarifa -->
-                <template v-slot:body-cell-precio="props">
-                  <q-td :props="props">
-                    <span class="text-weight-bold" style="color: var(--vb-text-primary);">${{ formatPrecio(props.row.precio) }}</span>
-                  </q-td>
-                </template>
-
-                <!-- Celda Estado -->
-                <template v-slot:body-cell-estado="props">
-                  <q-td :props="props">
-                    <q-badge :class="'badge-status-' + props.row.estado.toLowerCase()">
-                      {{ props.row.estado }}
-                    </q-badge>
-                  </q-td>
-                </template>
-
-                <!-- Acciones -->
-                <template v-slot:body-cell-acciones="props">
-                  <q-td :props="props">
-                    <q-btn
-                      flat
-                      round
-                      dense
-                      color="primary"
-                      icon="add_shopping_cart"
-                      :to="{ path: '/ventas/nueva', query: { viajeId: props.row.id || props.row._id } }"
-                    >
-                      <q-tooltip>Vender tiquete para este viaje</q-tooltip>
-                    </q-btn>
-                  </q-td>
-                </template>
-              </q-table>
+                :viajes="obtenerViajesProximos()"
+                compacto
+              />
             </q-card-section>
           </q-card>
         </div>
@@ -320,6 +245,7 @@ import { useClienteStore } from '../stores/clienteStore'
 import { useViajeStore } from '../stores/viajeStore'
 import { useVentaStore } from '../stores/ventaStore'
 import { estimarRutaViaje } from '../utils/distanceCalculator'
+import ViajesTable from '../components/ViajesTable.vue'
 
 const authStore = useAuthStore()
 const vehiculoStore = useVehiculoStore()

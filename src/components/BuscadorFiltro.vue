@@ -2,8 +2,7 @@
   <q-card v-if="wrapCard" flat bordered class="vb-card q-mb-md shadow-1 rounded-borders">
     <q-card-section class="q-py-sm">
       <q-input
-        :model-value="modelValue"
-        @update:model-value="$emit('update:modelValue', $event)"
+        v-model="model"
         outlined
         dense
         :placeholder="placeholder"
@@ -20,8 +19,7 @@
   <div v-else class="row q-mb-md">
     <div :class="colClass || 'col-12 col-md-5'">
       <q-input
-        :model-value="modelValue"
-        @update:model-value="$emit('update:modelValue', $event)"
+        v-model="model"
         outlined
         dense
         :placeholder="placeholder"
@@ -37,11 +35,12 @@
 </template>
 
 <script setup>
+const model = defineModel({
+  type: String,
+  default: ''
+})
+
 defineProps({
-  modelValue: {
-    type: String,
-    default: ''
-  },
   placeholder: {
     type: String,
     default: 'Buscar...'
@@ -59,14 +58,4 @@ defineProps({
     default: ''
   }
 })
-
-defineEmits(['update:modelValue'])
 </script>
-
-
-<!-- 
-linea clientesPages 19,
-linea usuariosPage 54,
-linea vehiculosPage 18,
-linea ventasPage 18,
--->

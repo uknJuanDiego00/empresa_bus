@@ -1,6 +1,6 @@
 <template>
   <div class="row items-center justify-between q-mb-lg">
-    <!-- Bloque izquierdo: badge opcional + título + subtítulo -->
+    <!-- Bloque izquierdo: título, subtítulo y badge opcional -->
     <div>
       <div v-if="badge" class="row items-center q-gutter-x-sm">
         <q-badge :color="badge.color || 'primary'" :text-color="badge.textColor || 'white'" class="text-weight-bold text-caption q-pa-xs">
@@ -19,9 +19,31 @@
       </div>
     </div>
 
-    <!-- Bloque derecho: slot para botones / acciones personalizadas -->
+    <!-- Bloque derecho: botones directos y sencillos mediante props básicas -->
     <div class="row q-gutter-sm">
-      <slot />
+      <!-- Botón principal -->
+      <q-btn
+        v-if="botonTexto"
+        color="primary"
+        unelevated
+        no-caps
+        :icon="botonIcono"
+        :label="botonTexto"
+        :to="botonRuta"
+        @click="onBotonClick ? onBotonClick() : null"
+      />
+
+      <!-- Segundo botón opcional (por ejemplo en Ventas) -->
+      <q-btn
+        v-if="boton2Texto"
+        outline
+        color="primary"
+        no-caps
+        :icon="boton2Icono"
+        :label="boton2Texto"
+        :to="boton2Ruta"
+        @click="onBoton2Click ? onBoton2Click() : null"
+      />
     </div>
   </div>
 </template>
@@ -39,8 +61,40 @@ defineProps({
   badge: {
     type: Object,
     default: null
-    // { text, color, textColor, icon }
+  },
+  // Botón principal
+  botonTexto: {
+    type: String,
+    default: ''
+  },
+  botonIcono: {
+    type: String,
+    default: ''
+  },
+  botonRuta: {
+    type: String,
+    default: ''
+  },
+  onBotonClick: {
+    type: Function,
+    default: null
+  },
+  // Segundo botón opcional
+  boton2Texto: {
+    type: String,
+    default: ''
+  },
+  boton2Icono: {
+    type: String,
+    default: ''
+  },
+  boton2Ruta: {
+    type: String,
+    default: ''
+  },
+  onBoton2Click: {
+    type: Function,
+    default: null
   }
 })
 </script>
-

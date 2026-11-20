@@ -247,8 +247,10 @@
 <script setup>
 import { ref } from 'vue'
 import { useQuasar } from 'quasar'
+import { useAuthStore } from '../stores/authStore'
 
 const $q = useQuasar()
+const authStore = useAuthStore()
 const cargando = ref(false)
 const verPassword = ref(false)
 const errorEnvio = ref('')
@@ -402,29 +404,13 @@ async function registrar() {
       telefono: String(form.value.telefono || '').trim()
     }
 
-    let creado = null
-    try {
-      const { usuarioApi } = await import('../services/api.js')
-      const res = await usuarioApi.crear(payload)
-      creado = res?.data || res
-    } catch (apiErr) {
-      // Si el backend no tiene la ruta de usuarios, guardamos el registro del lado cliente
-      // NUNCA almacenamos la contraseña en plain text — se registra como creado sin persistencia real
-      console.warn('Backend /api/usuarios no disponible. El usuario se registra localmente sin autenticación real.', apiErr.message)
-      creado = {
-        nombre: payload.nombre,
-        correo: payload.correo,
-        username: payload.username,
-        rol: payload.rol,
-        documento: payload.documento
-      }
-    }
+    const creado = await authStore.registrarUsuario(payload)
 
     usuarioCreado.value = {
-      nombre: creado?.nombre || payload.nombre,
-      correo: creado?.correo || payload.correo,
-      username: creado?.username || payload.username,
-      rol: creado?.rol || rolValor
+      nombre: creado.nombre,
+      correo: creado.correo,
+      username: creado.username,
+      rol: creado.rol
     }
 
     $q.notify({

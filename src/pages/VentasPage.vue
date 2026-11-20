@@ -4,24 +4,13 @@
       <PageHeader
         title="Ventas &amp; Reservas"
         :subtitle="`${obtenerVentas().length} registros en total`"
-      >
-        <q-btn
-          color="primary"
-          icon="add_shopping_cart"
-          label="Nueva Venta"
-          to="/ventas/nueva"
-          no-caps
-          unelevated
-        />
-        <q-btn
-          outline
-          color="primary"
-          icon="alt_route"
-          label="Venta por Trayectoria"
-          to="/ventas/manual"
-          no-caps
-        />
-      </PageHeader>
+        boton-texto="Nueva Venta"
+        boton-icono="add_shopping_cart"
+        boton-ruta="/ventas/nueva"
+        boton2-texto="Venta por Trayectoria"
+        boton2-icono="alt_route"
+        boton2-ruta="/ventas/manual"
+      />
 
       <!-- Filtros por estado -->
       <div class="row q-gutter-sm items-center q-mb-md">

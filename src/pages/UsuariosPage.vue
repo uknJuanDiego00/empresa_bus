@@ -6,17 +6,10 @@
         title="Gestión Global de Usuarios"
         subtitle="Control administrativo global: altas, bajas, roles y restablecimiento de credenciales"
         :badge="{ text: 'EXCLUSIVO SUPERADMIN', color: 'purple-9', textColor: 'white', icon: 'security' }"
-      >
-        <q-btn
-          color="primary"
-          icon="person_add"
-          label="Nuevo Usuario"
-          @click="abrirModalCrear"
-          no-caps
-          unelevated
-          class="text-weight-bold"
-        />
-      </PageHeader>
+        boton-texto="Nuevo Usuario"
+        boton-icono="person_add"
+        :on-boton-click="abrirModalCrear"
+      />
 
       <!-- Métricas del sistema de usuarios -->
       <div class="row q-col-gutter-md q-mb-lg">

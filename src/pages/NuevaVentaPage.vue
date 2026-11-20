@@ -1125,7 +1125,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useViajeStore } from '../stores/viajeStore'
@@ -1869,10 +1869,6 @@ onMounted(async () => {
     clienteStore.cargarClientes(),
     ventaStore.cargarVentas()
   ])
-  verificarViajeDesdeRuta()
-})
-
-watch(() => route.query.viajeId, () => {
   verificarViajeDesdeRuta()
 })
 

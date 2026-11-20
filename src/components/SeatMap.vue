@@ -236,15 +236,10 @@ const props = defineProps({
   // Permite selección interactiva o solo visualización
   selectable: { type: Boolean, default: true },
   // Nombre del conductor
-  conductor: { type: String, default: '' }
+  conductor: { type: String, default: '' },
+  // Función callback para gestionar selección de asientos de forma explícita
+  onSeleccionar: { type: Function, default: null }
 })
-
-const emit = defineEmits([
-  'seleccionar',
-  'update:puestoSeleccionado',
-  'update:puestosSeleccionados',
-  'update:seleccionados'
-])
 
 // Total de asientos disponibles para calcular equipamiento
 function obtenerTotalAsientos() {
@@ -501,14 +496,16 @@ function onAsientoClick(asiento) {
   // Los puestos ocupados y pendientes están bloqueados
   if (isOcupado(asiento) || isPendiente(asiento)) return
 
-  // Emitir evento directo con el asiento seleccionado para que el contenedor lo gestione
-  emit('seleccionar', asiento)
-  emit('update:puestoSeleccionado', asiento)
+  // Invocar callback directo con el asiento seleccionado para que el contenedor lo gestione
+  if (typeof props.onSeleccionar === 'function') {
+    props.onSeleccionar(asiento)
+  }
 }
 
 function deseleccionar() {
-  emit('seleccionar', null)
-  emit('update:puestoSeleccionado', null)
+  if (typeof props.onSeleccionar === 'function') {
+    props.onSeleccionar(null)
+  }
 }
 </script>
 
